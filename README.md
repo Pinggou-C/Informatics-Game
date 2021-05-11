@@ -1,2 +1,2 @@
 # Informatics-Game
-test
+This is the game project for informatics
