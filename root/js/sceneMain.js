@@ -8,6 +8,7 @@
     this.load.spritesheet('fullscreen', 'assets/ui/fullscreen.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('dude','assets/player/dude.png',{ frameWidth: 32, frameHeight: 48 });
     this.load.image('back','assets/1.png');
+
   }
 
   create() {
@@ -245,7 +246,7 @@
     gameState.hit = true;
     this.time.delayedCall(200, this.hitflash, null, this);
     this.time.delayedCall(1500, this.hitready, null, this);
-    gameState.camera.shake(200, 0.01);
+    gameState.camera.shake(200, 0.005);
   }
   }
   hitready (){
@@ -268,5 +269,31 @@
   }
   enemiebombhit(enemie, object){
     return;
+  }
+  musicplayer(name, fadetime){
+
+  }
+
+  //ADD Enemies & Bossen
+  Spawnbat(x, y, level){
+    var index = gameState.batindex + 1
+  }
+  Spawnzombie(x, y, level){
+
+  }
+  Spawnslime(x, y, level){
+
+  }
+  Spawnskeleton(x, y, level){
+
+  }
+  Spawnwitch(x, y, level){
+
+  }
+  Spawnbigslime(x, y, level){
+
+  }
+  Spawnsmallslime(x, y, level){
+
   }
 }

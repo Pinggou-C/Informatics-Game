@@ -2,8 +2,11 @@ class Splash extends Phaser.Scene {
   constructor() {
     super('Splash');
   }preload(){
-    this.load.image('splash','assets/ui/splash.png')
+    this.load.image('splash','assets/ui/splash.png');
+    this.load.audio('splashsound', 'Sound/Effects/open.mp3');
   }create() {
+    var open = this.sound.add('splashsound');
+    open.play();
     var splashs = this.add.image((1280)/2, (720)/2, 'splash');
     splashs.alpha = 0;
     var style = {fill : '#FFF',fontFamily: 'Sans-serif',fontSize: '32px',align: 'right'};
