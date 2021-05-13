@@ -23,10 +23,10 @@
 
     gameState.hit = false;
 // Camera
-    var camera = this.cameras.main;
-    camera.setLerp(1, 1);
-    camera.setDeadzone(20, 16);
-    camera.startFollow(gameState.player);
+    gameState.camera = this.cameras.main;
+    gameState.camera.setLerp(1, 1);
+    gameState.camera.setDeadzone(20, 16);
+    gameState.camera.startFollow(gameState.player);
 
 
 
@@ -245,6 +245,7 @@
     gameState.hit = true;
     this.time.delayedCall(200, this.hitflash, null, this);
     this.time.delayedCall(1500, this.hitready, null, this);
+    gameState.camera.shake(200, 0.01);
   }
   }
   hitready (){
