@@ -162,7 +162,7 @@
           repeat: 0,
           yoyo: false
         });
-        this.scene.resume();
+        //this.scene.resume();
       }else{
         this.game.paused = true;
         this.tweens.add({
@@ -181,7 +181,7 @@
           repeat: 0,
           yoyo: false
         });
-        this.scene.pause();
+        //this.scene.pause();
       }
     }, this);
 
