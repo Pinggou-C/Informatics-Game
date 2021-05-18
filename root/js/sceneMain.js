@@ -44,13 +44,20 @@
   //playerss.this.physics.add.sprite()(200, 200, 'dude');
 //  playerss.physics.add.sprite(200, 300, 'dude');
 //  playerss.physics.add.sprite(100, 100, 'dude');
-  gameState.bats.create(100, 300, 'dude');
-  gameState.bats.create(100, 400, 'dude');
-  gameState.bats.create(100, 500, 'dude');
-  gameState.bats.create(200, 400, 'dude');
-  gameState.bats.create(200, 500, 'dude');
-  gameState.bats.create(300, 400, 'dude');
-  gameState.bats.create(300, 500, 'dude');
+  gameState.bats.create(100, 100, 'dude');
+  gameState.bats.create(100, -100, 'dude');
+  gameState.bats.create(100, 0, 'dude');
+  gameState.bats.create(-100, 100, 'dude');
+  gameState.bats.create(-100, -100, 'dude');
+  gameState.bats.create(-100, 0, 'dude');
+  gameState.bats.create(0, -100, 'dude');
+  gameState.bats.create(0, 0, 'dude');
+  gameState.bats.create(0, 100, 'dude');
+  gameState.bats.getChildren().forEach(function (enemy){
+    enemy.body.setVelocityX(Phaser.Math.Between(-1, 0)*100+50);
+    enemy.body.setVelocityY(Phaser.Math.Between(-1, 0)*100+50);
+  });
+  gameState.bats.setOrigin(0.5, 0.5);
   var zombies = this.add.group();
   zombies.enableBody = true;
   zombies.physicsBodyType = Phaser.Physics.ARCADE;
@@ -155,6 +162,7 @@
           repeat: 0,
           yoyo: false
         });
+        this.scene.resume();
       }else{
         this.game.paused = true;
         this.tweens.add({
@@ -173,6 +181,7 @@
           repeat: 0,
           yoyo: false
         });
+        this.scene.pause();
       }
     }, this);
 
@@ -225,10 +234,21 @@
       }else{
         gameState.player.setVelocityY(0);
       }
-      //gameState.bats.setVelocityX(80);
-
-
-//
+      gameState.bats.getChildren().forEach(function (enemy){
+        if (enemy.body.x > 200 && enemy.body.velocity.x > 1){
+          enemy.body.setVelocityX(-50);
+        }
+        else if (enemy.body.x < -200 && enemy.body.velocity.x < -1){
+          enemy.body.setVelocityX(50);
+        }
+        if (enemy.body.y > 200 && enemy.body.velocity.y > 1){
+          enemy.body.setVelocityY(-50);
+        }
+        else if (enemy.body.y < -200 && enemy.body.velocity.x < -1){
+          enemy.body.setVelocityY(50);
+        }
+        console.log(enemy.body.velocity);
+    })
     }
 
 
@@ -277,7 +297,7 @@
   //ADD Enemies & Bossen
 
 
-  
+
   Spawnbat(x, y, level){
     var index = gameState.batindex + 1
   }
