@@ -246,9 +246,10 @@
         gameState.player.setVelocityY(-80);
       }else if (gameState.cursors.down.isDown){
         gameState.player.setVelocityY(80);
-      }else{
-        gameState.player.setVelocityY(0);
       }
+    //else{
+    //    gameState.player.setVelocityY(0);
+    //  }
 
       //Enemies
         //wolf
