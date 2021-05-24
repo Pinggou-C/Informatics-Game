@@ -15,7 +15,8 @@
 
 //  World
     this.add.image(0, 0, 'back');
-
+    gameState.goal = this.add.sprite(0, 0, 'fullscreen');
+    gameState.goal.setOrigin(0.5, 0.5);
 
 
 // Player
@@ -36,37 +37,50 @@
     walls = this.physics.add.staticGroup();
 
 
-
+//Lifestock
+  gameState.sheep = this.physics.add.group();
+  gameState.sheep.enableBody = true;
+  gameState.sheep.setOrigin(0.5, 0.5);
+  gameState.sheep.create(50, -50, 'dude');
+  gameState.sheep.create(-50, 50, 'dude');
+  gameState.sheep.create(50, 50, 'dude');
+  gameState.sheep.create(-50, -50, 'dude');
+  gameState.sheep.create(0, 0, 'dude');
+  gameState.sheep.create(-50, 0, 'dude');
+  gameState.sheep.create(0, -50, 'dude');
+  gameState.sheep.create(50, 0, 'dude');
+  gameState.sheep.create(0, 50, 'dude');
+  gameState.sheep.getChildren().forEach(function (shee){
+    shee.live = 3;
+    shee.speed = Phaser.Math.Between(10, 20);
+    shee.hitready =  true;
+});
 //Enemies
-  gameState.bats = this.physics.add.group();
-  gameState.bats.enableBody = true;
-//  gameState.bats.physicsBodyType = Phaser.Physics;
-  //playerss.this.physics.add.sprite()(200, 200, 'dude');
-//  playerss.physics.add.sprite(200, 300, 'dude');
-//  playerss.physics.add.sprite(100, 100, 'dude');
-  gameState.bats.create(100, 100, 'dude');
-  gameState.bats.create(100, -100, 'dude');
-  gameState.bats.create(100, 0, 'dude');
-  gameState.bats.create(-100, 100, 'dude');
-  gameState.bats.create(-100, -100, 'dude');
-  gameState.bats.create(-100, 0, 'dude');
-  gameState.bats.create(0, -100, 'dude');
-  gameState.bats.create(0, 0, 'dude');
-  gameState.bats.create(0, 100, 'dude');
-  gameState.bats.getChildren().forEach(function (enemy){
+  gameState.wolf = this.physics.add.group();
+  gameState.wolf.enableBody = true;
+  gameState.wolf.create(100, 100, 'dude');
+  gameState.wolf.create(100, -100, 'dude');
+  gameState.wolf.create(100, 0, 'dude');
+  gameState.wolf.create(-100, 100, 'dude');
+  gameState.wolf.create(-100, -100, 'dude');
+  gameState.wolf.create(-100, 0, 'dude');
+  gameState.wolf.create(0, -100, 'dude');
+  gameState.wolf.create(0, 0, 'dude');
+  gameState.wolf.create(0, 100, 'dude');
+  gameState.wolf.getChildren().forEach(function (enemy){
     enemy.body.setVelocityX(Phaser.Math.Between(-1, 0)*100+50);
     enemy.body.setVelocityY(Phaser.Math.Between(-1, 0)*100+50);
   });
-  gameState.bats.setOrigin(0.5, 0.5);
-  var zombies = this.add.group();
-  zombies.enableBody = true;
-  zombies.physicsBodyType = Phaser.Physics.ARCADE;
-  var skeletons = this.add.group();
-  skeletons.enableBody = true;
-  skeletons.physicsBodyType = Phaser.Physics.ARCADE;
-  var slimes = this.add.group();
-  slimes.enableBody = true;
-  slimes.physicsBodyType = Phaser.Physics.ARCADE;
+  gameState.wolf.setOrigin(0.5, 0.5);
+  gameState.Lion = this.physics.add.group();
+  gameState.Lion.enableBody = true;
+  gameState.Lion.physicsBodyType = Phaser.Physics.ARCADE;
+  gameState.eagle = this.add.group();
+  gameState.eagle.enableBody = true;
+  gameState.eagle.physicsBodyType = Phaser.Physics.ARCADE;
+  gameState.scorpion = this.add.group();
+  gameState.scorpion.enableBody = true;
+  gameState.scorpion.physicsBodyType = Phaser.Physics.ARCADE;
 
 
 // Objects
@@ -84,6 +98,7 @@
 
 // Physics & Collisions
     this.physics.add.collider(gameState.player, walls);
+    this.physics.add.collider(gameState.sheep, walls);
     //this.physics.add.collider(gameState.player, gameState.bats);
 
 
@@ -97,10 +112,10 @@
           //  this.physics.add.overlap(gameState.player, pits, pithit, null, this);
 
         // Enemies
-            this.physics.add.overlap(gameState.player, gameState.bats, this.batHit, null, this);
-            this.physics.add.overlap(gameState.player, skeletons, this.batHit, null, this);
-            this.physics.add.overlap(gameState.player, zombies, this.batHit, null, this);
-            this.physics.add.overlap(gameState.player, slimes, this.batHit, null, this);
+            this.physics.add.overlap(gameState.sheep, gameState.wolf, this.batHit, null, this);
+            this.physics.add.overlap(gameState.sheep, gameState.Lion, this.batHit, null, this);
+            this.physics.add.overlap(gameState.sheep, gameState.eagle, this.batHit, null, this);
+            this.physics.add.overlap(gameState.sheep, gameState.scorpion, this.batHit, null, this);
     // Enemie
         //Objects
           //  this.physics.add.overlap(bats, playerbombs, enemiebombhit, null, this);
@@ -234,21 +249,45 @@
       }else{
         gameState.player.setVelocityY(0);
       }
-      gameState.bats.getChildren().forEach(function (enemy){
-        if (enemy.body.x > 200 && enemy.body.velocity.x > 1){
+
+      //Enemies
+        //wolf
+      gameState.wolf.getChildren().forEach(function (enemy){
+        if (enemy.body.x > 400 && enemy.body.velocity.x > 1){
           enemy.body.setVelocityX(-50);
         }
-        else if (enemy.body.x < -200 && enemy.body.velocity.x < -1){
+        else if (enemy.body.x < -400 && enemy.body.velocity.x < -1){
           enemy.body.setVelocityX(50);
         }
-        if (enemy.body.y > 200 && enemy.body.velocity.y > 1){
+        if (enemy.body.y > 400 && enemy.body.velocity.y > 1){
           enemy.body.setVelocityY(-50);
         }
-        else if (enemy.body.y < -200 && enemy.body.velocity.x < -1){
+        else if (enemy.body.y < -400 && enemy.body.velocity.x < -1){
           enemy.body.setVelocityY(50);
         }
-        console.log(enemy.body.velocity);
     })
+      //lion
+
+      //scorpion
+
+      //eagle
+
+
+    //sheep AI
+    gameState.sheep.getChildren().forEach(function (shee){
+      if (shee.body.x > gameState.goal.x + 100 && shee.body.velocity.x > 1){
+        shee.body.setVelocityX(-shee.speed);
+      }
+      else if (shee.body.x < gameState.goal.x - 100 && shee.body.velocity.x < -1){
+        shee.body.setVelocityX(shee.speed);
+      }
+      if (shee.body.y > gameState.goal.y + 100 && shee.body.velocity.y > 1){
+        shee.body.setVelocityY(-shee.speed);
+      }
+      else if (shee.body.y < gameState.goal.y - 100 && shee.body.velocity.x < -1){
+        shee.body.setVelocityY(shee.speed);
+      }
+  })
     }
 
 
@@ -259,20 +298,27 @@
         'world y: ' + gameState.player.y
     ]);
   }
-  batHit (player, enemie){
-    if(gameState.hit == false){
-    console.log("ready");
-    gameState.player.tint = 0xff0000;;
-    gameState.hit = true;
-    this.time.delayedCall(200, this.hitflash, null, this);
-    this.time.delayedCall(1500, this.hitready, null, this);
-    gameState.camera.shake(200, 0.005);
+  batHit (shee, enemie){
+    if(shee.hitready == true){
+      console.log("ready");
+      shee.tint = 0xff0000;;
+      shee.hitready = false;
+      shee.live = shee.live - 1;
+      if(shee.live > 0){
+        this.time.delayedCall(200, this.hitflash(shee), null, this);
+        this.time.delayedCall(1500,
+          function (shee){
+            shee.hitready = true;
+            console.log("ready3");
+          }, [shee], this);
+      }else{
+        gameState.sheep.remove(shee, true);
+      }
+
+    //gameState.camera.shake(200, 0.005);
   }
   }
-  hitready (){
-    gameState.hit = false;
-  }
-  hitflash (){
+  hitflash (shee){
     this.tweens.addCounter({
       from: 255,
       to: 0,
@@ -280,10 +326,10 @@
       repeat: 3,
       onUpdate: function (tween){
         const value = Math.floor(tween.getValue());
-        gameState.player.setTint(Phaser.Display.Color.GetColor(255, value, value));
+        shee.setTint(Phaser.Display.Color.GetColor(255, value, value));
       },
       onComplete: function (tween) {
-            gameState.player.setTint(0xffffff);
+            shee.setTint(0xffffff);
       }
     });
   }
