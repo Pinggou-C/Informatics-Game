@@ -43,6 +43,7 @@ class Splash extends Phaser.Scene {
           console.log("Ready!");
           game.scale.resize(640, 360);
           game.scene.start('SceneMain');
+          game.scene.start('Pause');
           game.scene.remove('Splash');
         }
       }, this);

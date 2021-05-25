@@ -8,34 +8,29 @@
     this.load.spritesheet('fullscreen', 'assets/ui/fullscreen.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('dude','assets/player/dude.png',{ frameWidth: 32, frameHeight: 48 });
     this.load.image('back','assets/1.png');
-
+    this.load.image('wall', 'assets/world/Utitled.png', 250, 50)
   }
 
   create() {
+    gameState.velxtween = false;
+    gameState.delta;
+    this.events.on('pause', function () {
+                console.log('Scene A paused');
+            })
 
+            this.events.on('resume', function () {
+                console.log('Scene A resumed');
+            })
 //  World
     this.add.image(0, 0, 'back');
     gameState.goal = this.add.sprite(0, 0, 'fullscreen');
     gameState.goal.setOrigin(0.5, 0.5);
 
 
-// Player
-    gameState.player = this.physics.add.sprite(100, 200, 'dude');
-
-
-    gameState.hit = false;
-// Camera
-    gameState.camera = this.cameras.main;
-    gameState.camera.setLerp(1, 1);
-    gameState.camera.setDeadzone(20, 16);
-    gameState.camera.startFollow(gameState.player);
-
-
-
 // Walls
-    var walls;
-    walls = this.physics.add.staticGroup();
-
+    gameState.walls = this.physics.add.staticGroup();
+    gameState.walls.enableBody = true;
+    gameState.walls.create(0, 150, 'wall');
 
 //Lifestock
   gameState.sheep = this.physics.add.group();
@@ -95,21 +90,31 @@
   pits.physicsBodyType = Phaser.Physics.ARCADE;
 
 
+  // Player
+      gameState.player = this.physics.add.sprite(0, 100, 'dude');
+      gameState.player.velocity = new Phaser.Math.Vector2(0, 0);
+      gameState.player.setOrigin(0.5, 0.5);
+
+  // Camera
+      gameState.camera = this.cameras.main;
+      gameState.camera.startFollow(gameState.player);
+      gameState.camera.setLerp(1, 1);
+      gameState.camera.setDeadzone(40, 32);
+      gameState.camera.setBounds(-750, -250, 1500, 500);
+      gameState.camera.setFollowOffset(0, 20);
+
 
 // Physics & Collisions
-    this.physics.add.collider(gameState.player, walls);
-    this.physics.add.collider(gameState.sheep, walls);
+    this.physics.add.collider(gameState.player, gameState.walls);
+    this.physics.add.collider(gameState.sheep, gameState.walls);
     //this.physics.add.collider(gameState.player, gameState.bats);
-
+    gameState.time = 0;
 
 
 // Overlap
     // Player
         // objects
-            //this.physics.add.overlap(gameState.player, spikes, spikehit, null, this);
-          //  this.physics.add.overlap(gameState.player, lava, lavahit, null, this);
-          //  this.physics.add.overlap(gameState.player, bombs, bombhit, null, this);
-          //  this.physics.add.overlap(gameState.player, pits, pithit, null, this);
+
 
         // Enemies
             this.physics.add.overlap(gameState.sheep, gameState.wolf, this.batHit, null, this);
@@ -130,18 +135,6 @@
           //  this.physics.add.overlap(bats, pits, enemiebombhit, null, this);
           //  this.physics.add.overlap(skeletons, pits, enemiebombhit, null, this);
           //  this.physics.add.overlap(zombies, pits, enemiebombhit, null, this);
-// PauseMenu
-    var style = {fill : '#FFF',fontFamily: 'Sans-serif',fontSize: '64px',align: 'right'};
-    var pauserect = this.add.graphics({ fillStyle: { color: 0x000000 } })
-    .setAlpha(0);
-    pauserect.setScrollFactor(0,0);
-    var coverScreen = new Phaser.Geom.Rectangle(0, 0, game.config.width, game.config.height);
-    pauserect.fillRectShape(coverScreen);
-    var text = this.add.text(game.config.width/3, game.config.height/3, "Paused", style);
-    text.alpha = 0;
-    text.setAlign('left');
-    text.setScrollFactor(0,0);
-    pauserect.alpha = 0;
 
 
 
@@ -154,51 +147,6 @@
     gameState.cursors = this.input.keyboard.createCursorKeys();
     gameState.keys = this.input.keyboard.addKeys('Z,X,C,V');
     gameState.uikeys = this.input.keyboard.addKeys('ENTER,CTRL,SPACE,TAB,ALT,BACKSPACE,SHIFT');
-
-
-
-// Pause
-    gameState.uikeys.SPACE.on('down', function(){
-      if (this.game.paused) {
-        this.game.paused = false;
-        this.tweens.add({
-          targets: text,
-          alpha: { from: 1, to: 0 },
-          ease: 'Linear',
-          duration: 200,
-          repeat: 0,
-          yoyo: false
-        });
-        this.tweens.add({
-          targets: pauserect,
-          alpha: 0,
-          ease: 'Linear',
-          duration: 150,
-          repeat: 0,
-          yoyo: false
-        });
-        //this.scene.resume();
-      }else{
-        this.game.paused = true;
-        this.tweens.add({
-          targets: text,
-          alpha: { from: 0, to: 1 },
-          ease: 'Linear',
-          duration: 500,
-          repeat: 0,
-          yoyo: false
-        });
-        this.tweens.add({
-          targets: pauserect,
-          alpha: 0.4,
-          ease: 'Linear',
-          duration: 300,
-          repeat: 0,
-          yoyo: false
-        });
-        //this.scene.pause();
-      }
-    }, this);
 
 
 
@@ -233,23 +181,54 @@
     if (this.game.paused) {
       return;
     }else{
-
-
+      console.log(gameState.delta -delta)
 // PlayerControl
       if (gameState.cursors.left.isDown){
-        gameState.player.setVelocityX(-80);
+        if(gameState.player.body.velocity.x > -80){
+          gameState.tweenx.stop();
+          gameState.velxtween = false;
+          if(gameState.player.body.velocity.x > 0){
+            gameState.player.body.velocity.x-= 1600 * ((delta - gameState.delta)/1000);
+          }else{
+            gameState.player.body.velocity.x-= 600 * ((delta - gameState.delta)/1000);
+          }
+        }
       }else if (gameState.cursors.right.isDown){
-        gameState.player.setVelocityX(80);
-      }else{
-        gameState.player.setVelocityX(0);
-      }if (gameState.cursors.up.isDown){
-        gameState.player.setVelocityY(-80);
+        if(gameState.player.body.velocity.x < 80){
+          gameState.tweenx.stop();
+          gameState.velxtween = false;
+          if(gameState.player.body.velocity.x < 0){
+            gameState.player.body.velocity.x+= 1600 * ((delta - gameState.delta)/1000);
+          }else{
+            gameState.player.body.velocity.x+= 600 * ((delta - gameState.delta)/1000);
+          }
+        }
+      }else if(gameState.velxtween == false){
+        console.log('hi')
+        gameState.velxtween = true;
+        gameState.tweenx = this.tweens.addCounter({
+          from: gameState.player.body.velocity.x,
+          to: 0,
+          duration: 200,
+          repeat: 0,
+          onUpdate: function (tween){
+            const value = Math.floor(tween.getValue());
+            gameState.player.setVelocityX(value);
+          },
+          onComplete: function(){
+            gameState.velxtween = false;
+          }
+        });
+      }if (gameState.cursors.up.isDown && gameState.player.body.touching.down){
+        gameState.player.setVelocityY(-240);
       }else if (gameState.cursors.down.isDown){
         gameState.player.setVelocityY(80);
       }
-    //else{
-    //    gameState.player.setVelocityY(0);
-    //  }
+
+      //camera
+
+
+
 
       //Enemies
         //wolf
@@ -296,8 +275,10 @@
 // DEBUG
     gameState.texttwo.setText([
         'world x: ' + gameState.player.x,
-        'world y: ' + gameState.player.y
+        'world y: ' + gameState.player.y,
+        'time:' + delta/1000
     ]);
+    gameState.delta = delta;
   }
   batHit (shee, enemie){
     if(shee.hitready == true){
