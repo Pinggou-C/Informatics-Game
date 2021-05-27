@@ -157,29 +157,6 @@ gameState.sheepspeed = 1;
 
 
 
-// FullScreen
-    var button = this.add.image(640-8, 8, 'fullscreen', 0).setOrigin(1, 0).setInteractive();
-    button.setScrollFactor(0,0);
-    button.on('pointerup', function () {
-      if (this.scale.isFullscreen){
-        button.setFrame(0);
-        this.scale.stopFullscreen();
-      }else{
-        button.setFrame(1);
-        this.scale.startFullscreen();
-      }
-    }, this);
-    gameState.uikeys.TAB.on('down', function () {
-      if (this.scale.isFullscreen){
-        button.setFrame(0);
-        this.scale.stopFullscreen();
-      }else{
-        button.setFrame(1);
-        this.scale.startFullscreen();
-      }
-    }, this);
-
-
     console.log("Ready!");
   }
 

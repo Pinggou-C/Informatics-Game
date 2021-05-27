@@ -3,6 +3,7 @@ class Pause extends Phaser.Scene {
         super('Pause');
     }
     preload(){
+      this.load.spritesheet('fullscreen', 'assets/ui/fullscreen.png', { frameWidth: 32, frameHeight: 32 });
     }
     create() {
       this.game.paused = false;
@@ -19,6 +20,26 @@ class Pause extends Phaser.Scene {
       pauserect.alpha = 0;
 
       this.uikeys = this.input.keyboard.addKeys('ENTER,CTRL,SPACE,TAB,ALT,BACKSPACE,SHIFT');
+      var button = this.add.image(640-8, 8, 'fullscreen', 0).setOrigin(1, 0).setInteractive();
+      button.setScrollFactor(0,0);
+      button.on('pointerup', function () {
+        if (this.scale.isFullscreen){
+          button.setFrame(0);
+          this.scale.stopFullscreen();
+        }else{
+          button.setFrame(1);
+          this.scale.startFullscreen();
+        }
+      }, this);
+      this.uikeys.TAB.on('down', function () {
+        if (this.scale.isFullscreen){
+          button.setFrame(0);
+          this.scale.stopFullscreen();
+        }else{
+          button.setFrame(1);
+          this.scale.startFullscreen();
+        }
+      }, this);
       this.uikeys.SPACE.on('down', function(){
         if(this.game.paused == true){
           this.game.paused = false;
@@ -67,6 +88,7 @@ class Pause extends Phaser.Scene {
 
 
       }, this);
+
     }
     update() {
     }
