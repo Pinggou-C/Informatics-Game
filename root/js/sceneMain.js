@@ -12,6 +12,9 @@
   }
 
   create() {
+    gameState.jumpwait = 0;
+    gameState.jumptimer = false;
+    gameState.wasonfloor = false;
     gameState.velxtween = false;
     gameState.delta;
     this.events.on('pause', function () {
@@ -152,12 +155,11 @@ gameState.sheepspeed = 1;
 
 // KeyBoard INPUTS
     gameState.cursors = this.input.keyboard.createCursorKeys();
-    gameState.keys = this.input.keyboard.addKeys('Z,X,C,V');
-    gameState.uikeys = this.input.keyboard.addKeys('ENTER,CTRL,SPACE,TAB,ALT,BACKSPACE,SHIFT');
+    gameState.keys = this.input.keyboard.addKeys('Z,X,C,V,SPACE');
+    gameState.uikeys = this.input.keyboard.addKeys('ENTER,SPACE, CTRL,P,TAB,ALT,BACKSPACE,SHIFT');
 
 
 
-    console.log("Ready!");
   }
 
 
@@ -165,8 +167,41 @@ gameState.sheepspeed = 1;
     if (this.game.paused) {
       return;
     }else{
-      console.log(gameState.delta -delta)
 // PlayerControl
+
+
+      if(gameState.player.body.touching.down == true){
+        if(gameState.wasonfloor == true){
+          gameState.floorwait = 150;
+        }else{
+          gameState.wasonfloor = true;
+          gameState.floorwait = 150;
+        }
+      }
+      if (gameState.uikeys.SPACE.isDown){
+        if(gameState.jumptimer == true){
+          gameState.jumpwait = 100;
+        }else{
+          gameState.jumptimer = true;
+          gameState.jumpwait = 100;
+        }
+      }
+      if(gameState.jumpwait>0){
+        console.log(gameState.jumptimer)
+        console.log(gameState.jumpwait)
+        gameState.jumpwait -= delta-gameState.delta;
+        if(gameState.jumpwait<0){
+          gameState.jumptimer = false;
+        }
+      }
+      if(gameState.floorwait>0){
+        console.log(gameState.wasonfloor)
+        console.log(gameState.floorwait)
+        gameState.floorwait -= delta-gameState.delta;
+        if(gameState.floorwait<0){
+          gameState.wasonfloor = false;
+        }
+      }
       if (gameState.cursors.left.isDown){
         if(gameState.player.body.velocity.x > -80){
           gameState.tweenx.stop();
@@ -192,7 +227,6 @@ gameState.sheepspeed = 1;
           }
         }
       }else if(gameState.velxtween == false){
-        console.log('hi')
         gameState.velxtween = true;
         gameState.tweenx = this.tweens.addCounter({
           from: gameState.player.body.velocity.x,
@@ -207,7 +241,7 @@ gameState.sheepspeed = 1;
             gameState.velxtween = false;
           }
         });
-      }if (gameState.cursors.up.isDown && gameState.player.body.touching.down){
+      }if (gameState.jumptimer == true && gameState.wasonfloor == true){
         gameState.player.setVelocityY(-300);
       }else if (gameState.cursors.down.isDown){
         gameState.player.setVelocityY(80);
@@ -276,7 +310,6 @@ gameState.sheepspeed = 1;
   }
   batHit (shee, enemie){
     if(shee.hitready == true){
-      console.log("ready");
       shee.tint = 0xff0000;;
       shee.hitready = false;
       shee.live = shee.live - 1;
@@ -285,7 +318,6 @@ gameState.sheepspeed = 1;
         this.time.delayedCall(2000,
           function (shee){
             shee.hitready = true;
-            console.log("ready3");
           }, [shee], this);
       }else{
         gameState.sheep.remove(shee, true);

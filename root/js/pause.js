@@ -19,7 +19,7 @@ class Pause extends Phaser.Scene {
       text.setScrollFactor(0,0);
       pauserect.alpha = 0;
 
-      this.uikeys = this.input.keyboard.addKeys('ENTER,CTRL,SPACE,TAB,ALT,BACKSPACE,SHIFT');
+      this.uikeys = this.input.keyboard.addKeys('ENTER,CTRL,P,TAB,ALT,BACKSPACE,SHIFT');
       var button = this.add.image(640-8, 8, 'fullscreen', 0).setOrigin(1, 0).setInteractive();
       button.setScrollFactor(0,0);
       button.on('pointerup', function () {
@@ -40,7 +40,7 @@ class Pause extends Phaser.Scene {
           this.scale.startFullscreen();
         }
       }, this);
-      this.uikeys.SPACE.on('down', function(){
+      this.uikeys.P.on('down', function(){
         if(this.game.paused == true){
           this.game.paused = false;
           this.tweens.add({
