@@ -7,8 +7,8 @@ class Menu extends Phaser.Scene {
     	//load our images or sounds
     }
     create() {
-       //define our objects
-       console.log("Ready!");
+      game.scene.start('SceneMain');
+       game.scene.start('Pause');
     }
     update() {
         //constant running loop

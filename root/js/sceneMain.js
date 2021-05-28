@@ -111,6 +111,7 @@ gameState.sheepspeed = 1;
       gameState.camera.setDeadzone(40, 32);
       gameState.camera.setBounds(-750, -250, 1500, 500);
       gameState.camera.setFollowOffset(0, 20);
+      
 
 
 // Physics & Collisions

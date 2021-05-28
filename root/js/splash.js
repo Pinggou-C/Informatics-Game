@@ -2,15 +2,17 @@ class Splash extends Phaser.Scene {
   constructor() {
     super('Splash');
   }preload(){
-    this.load.image('splash','assets/ui/splash.png');
+    this.load.image('splash','assets/square.png');
     this.load.audio('splashsound', 'Sound/Effects/open.mp3');
   }create() {
     var open = this.sound.add('splashsound');
     open.play();
     var splashs = this.add.image((1280)/2, (720)/2, 'splash');
     splashs.alpha = 0;
-    var style = {fill : '#FFF',fontFamily: 'Sans-serif',fontSize: '32px',align: 'right'};
-    var text = this.add.text(game.config.width/3, game.config.height - 100, "Press a button to continue", style);
+    splashs.setOrigin(0.5, 0.5)
+    splashs.scale = 7
+    var style = {fill : '#0000000',fontFamily: 'Sans-serif',fontSize: '40px',align: 'right'};
+    var text = this.add.text(game.config.width/3 - 20, game.config.height - 100, "Press a button to continue", style);
     text.alpha = 0;
     text.setAlign('left');
     this.tweens.add({
@@ -40,10 +42,9 @@ class Splash extends Phaser.Scene {
         repeat: 0,
         yoyo: false,
         onComplete: function () {
-          console.log("Ready!");
-          game.scale.resize(640, 360);
-          game.scene.start('SceneMain');
-          game.scene.start('Pause');
+        game.scale.resize(640, 360);
+        game.scene.start('SceneMain');
+         game.scene.start('Pause');
           game.scene.remove('Splash');
         }
       }, this);

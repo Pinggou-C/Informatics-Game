@@ -15,13 +15,13 @@ window.onload=function()
         parent: 'phaser-game',
 				pixelArt: true,
 				roundPixels: true,
-				backgroundColor: '#00000',
+				backgroundColor: '#F0FFFF',
 				autoRound: true,
 				scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_HORIZONTALLY
     },
-        scene: [Splash, SceneMain, Pause]
+        scene: [Splash, SceneMain, Pause, Menu]
     };
     game = new Phaser.Game(config);
 }
