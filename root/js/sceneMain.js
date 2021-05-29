@@ -7,11 +7,14 @@
   preload(){
     this.load.spritesheet('fullscreen', 'assets/ui/fullscreen.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('dude','assets/player/dude.png',{ frameWidth: 32, frameHeight: 48, endFrame: 8});
+    this.load.spritesheet('barrel', 'assets/world/barrelz.png', { frameWidth: 34, frameHeight: 44, endFrame: 60 });
+    this.load.spritesheet('hay','assets/world/haybale.png',{ frameWidth: 34, frameHeight: 34, endFrame: 41});
     this.load.image('back','assets/1.png');
     this.load.image('wall', 'assets/world/Utitled.png', 250, 50)
   }
 
   create() {
+    gameState.goalready = true;
     gameState.jumpwait = 0;
     gameState.jumptimer = false;
     gameState.wasonfloor = false;
@@ -28,8 +31,48 @@
     this.add.image(0, 0, 'back');
     gameState.goal = this.add.sprite(0, 0, 'fullscreen');
     gameState.goal.setOrigin(0.5, 0.5);
-
-
+    //haybale
+      //animations
+        this.anims.create({
+          key: 'haylook1',
+          frames: this.anims.generateFrameNumbers('hay', { start: 0, end: 20 }),
+          frameRate: 10,
+          repeat: 0
+        });
+    //haybale
+      //animations
+        this.anims.create({
+          key: 'barrelopen',
+          frames: this.anims.generateFrameNumbers('barrel', { start: 0, end: 10 }),
+          frameRate: 5,
+          repeat: 0
+        });
+        this.anims.create({
+          key: 'barrellook',
+          frames: this.anims.generateFrameNumbers('barrel', { start: 11, end: 40 }),
+          frameRate: 8,
+          repeat: 0
+        });
+        this.anims.create({
+          key: 'barrelpop',
+          frames: this.anims.generateFrameNumbers('barrel', { start: 53, end: 60 }),
+          frameRate: 9,
+          repeat: 0
+        });
+        this.anims.create({
+          key: 'barrelclose',
+          frames: this.anims.generateFrameNumbers('barrel', { start: 40, end: 52 }),
+          frameRate: 4,
+          repeat: 0
+        });
+      gameState.barrel = this.add.group();
+      gameState.barrel.create(200, 108, 'barrel');
+      gameState.barrel.getChildren().forEach(function (bar){
+        bar.ready = true;
+        bar.on('animationcomplete', function (anim, frame) {
+          this.emit('animationcomplete_' + anim.key, anim, frame);
+        }, bar);
+      });
 // Walls
     gameState.walls = this.physics.add.staticGroup();
     gameState.walls.enableBody = true;
@@ -111,7 +154,7 @@ gameState.sheepspeed = 1;
       gameState.camera.setDeadzone(40, 32);
       gameState.camera.setBounds(-750, -250, 1500, 500);
       gameState.camera.setFollowOffset(0, 20);
-      
+
 
 
 // Physics & Collisions
@@ -169,8 +212,32 @@ gameState.sheepspeed = 1;
       return;
     }else{
 // PlayerControl
+      //place goal
+      gameState.barrel.getChildren().forEach(function (bar){
+        if(bar.ready){
+          bar.anims.play('barrelopen', true);
+          bar.ready = false;
+        }
+        bar.on('animationcomplete_barrelopen', function () {bar.anims.play('barrellook', true);});
+        bar.on('animationcomplete_barrellook', function () {bar.anims.play('barrelclose', true);});
+        bar.on('animationcomplete_barrelclose', function () {bar.anims.play('barrelpop', true);});
+        bar.on('animationcomplete_barrelpop', function () {bar.ready = true;});
+      });
 
-
+      if(gameState.keys.Z.isDown){
+        if(gameState.goalready == true){
+          gameState.goal.x = gameState.player.body.x+16;
+          gameState.goal.y = gameState.player.body.y+16;
+          gameState.goalready = false;
+          this.time.delayedCall(5000,
+          function (){
+            gameState.goalready = true;
+          }, null, this);
+        }else{
+          //display error
+        }
+      }
+      //jump
       if(gameState.player.body.touching.down == true){
         if(gameState.wasonfloor == true){
           gameState.floorwait = 150;
@@ -188,21 +255,18 @@ gameState.sheepspeed = 1;
         }
       }
       if(gameState.jumpwait>0){
-        console.log(gameState.jumptimer)
-        console.log(gameState.jumpwait)
         gameState.jumpwait -= delta-gameState.delta;
-        if(gameState.jumpwait<0){
+        if(gameState.jumpwait<=0){
           gameState.jumptimer = false;
         }
       }
       if(gameState.floorwait>0){
-        console.log(gameState.wasonfloor)
-        console.log(gameState.floorwait)
         gameState.floorwait -= delta-gameState.delta;
-        if(gameState.floorwait<0){
+        if(gameState.floorwait<=0){
           gameState.wasonfloor = false;
         }
       }
+      //left right
       if (gameState.cursors.left.isDown){
         if(gameState.player.body.velocity.x > -80){
           gameState.tweenx.stop();
@@ -244,6 +308,8 @@ gameState.sheepspeed = 1;
         });
       }if (gameState.jumptimer == true && gameState.wasonfloor == true){
         gameState.player.setVelocityY(-300);
+        gameState.wasonfloor = false;
+        gameState.jumptimer = false;
       }else if (gameState.cursors.down.isDown){
         gameState.player.setVelocityY(80);
       }
@@ -278,17 +344,38 @@ gameState.sheepspeed = 1;
 
     //sheep AI
     gameState.sheep.getChildren().forEach(function (shee, scene){
-      if (shee.body.x > gameState.goal.x + 100 && shee.body.velocity.x > 1){
+      if (shee.body.x > gameState.goal.x + 100){
         shee.body.setVelocityX(-shee.speed*gameState.sheepspeed);
-      }else if (shee.body.x < gameState.goal.x - 100 && shee.body.velocity.x < -1){
+      }else if (shee.body.x < gameState.goal.x - 100){
         shee.body.setVelocityX(shee.speed*gameState.sheepspeed);
       }else if(shee.timer == true){
         shee.timer=false;
-        this.time.delayedCall(Phaser.Math.Between(2000, 6000),
-          function (shee){
-            shee.body.setVelocityX(-shee.body.velocity.x);
-            shee.timer = true;
-          }, [shee], this);
+         shee.tar = Phaser.Math.Between(0, 2);
+         console.log(shee.tar);
+          if (shee.tar == 0 || shee.tar == 3){
+            //idle
+            shee.wait = 1;
+            shee.body.setVelocityX(0);
+          }else if(shee.tar == 1){
+            //left
+            shee.wait = 0.75;
+            shee.body.setVelocityX(shee.speed*-gameState.sheepspeed);
+          }else if(shee.tar == 2){
+            //right
+            shee.wait = 0.75;
+            shee.body.setVelocityX(shee.speed*gameState.sheepspeed);
+          }
+          this.time.delayedCall(Phaser.Math.Between(7500, 15000) * shee.wait,
+            function (shee){
+              shee.timer = true;
+            }, [shee], this);
+      }else if(shee.body.velocity.x != 0 && shee.tar == 0 && shee.isdo == false){
+        this.time.delayedCall(Phaser.Math.Between(1000, 4000),
+        function (shee){
+          if(shee.body.velocity.x != 0 && shee.tar == 0){
+            shee.body.setVelocityX(0);
+          }
+        }, [shee], this);
       }
     //  if (shee.body.y > gameState.goal.y + 100 && shee.body.velocity.y > 1){
     //    shee.body.setVelocityY(-shee.speed);
