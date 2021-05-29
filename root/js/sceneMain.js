@@ -69,6 +69,7 @@
       gameState.barrel.create(200, 108, 'barrel');
       gameState.barrel.getChildren().forEach(function (bar){
         bar.ready = true;
+        bar.hit = false;
         bar.on('animationcomplete', function (anim, frame) {
           this.emit('animationcomplete_' + anim.key, anim, frame);
         }, bar);
@@ -115,6 +116,9 @@ gameState.sheepspeed = 1;
   //gameState.wolf.create(0, 0, 'dude', 0);
   //gameState.wolf.create(0, 100, 'dude', 0);
   gameState.wolf.getChildren().forEach(function (enemy){
+    enemy.health = 4;
+    enemy.speed = 75;
+    enemy.wait = false;
     enemy.body.setVelocityX(Phaser.Math.Between(-1, 0)*100+50);
     enemy.body.setVelocityY(Phaser.Math.Between(-1, 0)*100+50);
   });
@@ -146,6 +150,20 @@ gameState.sheepspeed = 1;
       gameState.player = this.physics.add.sprite(0, 100, 'dude', 4);
       gameState.player.velocity = new Phaser.Math.Vector2(0, 0);
       gameState.player.setOrigin(0.5, 0.5);
+      //weapons
+        gameState.projectile = this.physics.add.group({allowGravity: false});
+        gameState.projectile.getChildren().forEach(function (pro){
+          pro.strength = 3;
+          pro.knockback = 1;
+          pro.stun = 500;
+        });
+        gameState.stick = this.physics.add.group({allowGravity: false});
+        gameState.stick.create(200, 100, 'dude', 4);
+        gameState.stick.getChildren().forEach(function (sti){
+          sti.strength = 1;
+          sti.knockback = 3;
+          sti.stun = 500;
+        });
 
   // Camera
       gameState.camera = this.cameras.main;
@@ -161,6 +179,8 @@ gameState.sheepspeed = 1;
     this.physics.add.collider(gameState.player, gameState.walls);
     this.physics.add.collider(gameState.sheep, gameState.walls);
     this.physics.add.collider(gameState.wolf, gameState.walls);
+    this.physics.add.collider(gameState.wolf, gameState.walls);
+
     //this.physics.add.collider(gameState.player, gameState.bats);
     gameState.time = 0;
 
@@ -177,19 +197,9 @@ gameState.sheepspeed = 1;
             this.physics.add.overlap(gameState.sheep, gameState.scorpion, this.batHit, null, this);
     // Enemie
         //Objects
-          //  this.physics.add.overlap(bats, playerbombs, enemiebombhit, null, this);
-          //  this.physics.add.overlap(skeletons, playerbombs, enemiebombhit, null, this);
-          //  this.physics.add.overlap(zombies, playerbombs, enemiebombhit, null, this);
-          //  this.physics.add.overlap(bats, spikes, enemiebombhit, null, this);
-          //  this.physics.add.overlap(skeletons, spikes, enemiebombhit, null, this);
-          //  this.physics.add.overlap(zombies, spikes, enemiebombhit, null, this);
-          //  this.physics.add.overlap(bats, lava, enemiebombhit, null, this);
-          //  this.physics.add.overlap(skeletons, lava, enemiebombhit, null, this);
-          //  this.physics.add.overlap(zombies, lava, enemiebombhit, null, this);
-          //  this.physics.add.overlap(bats, pits, enemiebombhit, null, this);
-          //  this.physics.add.overlap(skeletons, pits, enemiebombhit, null, this);
-          //  this.physics.add.overlap(zombies, pits, enemiebombhit, null, this);
-
+        //this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, [hitstrength, knockback, stun], this);
+          this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, null, this);
+          this.physics.add.overlap(gameState.wolf, gameState.stick, this.enimHit, null, this);
 
 
 // DEBUG:
@@ -218,10 +228,22 @@ gameState.sheepspeed = 1;
           bar.anims.play('barrelopen', true);
           bar.ready = false;
         }
-        bar.on('animationcomplete_barrelopen', function () {bar.anims.play('barrellook', true);});
-        bar.on('animationcomplete_barrellook', function () {bar.anims.play('barrelclose', true);});
-        bar.on('animationcomplete_barrelclose', function () {bar.anims.play('barrelpop', true);});
-        bar.on('animationcomplete_barrelpop', function () {bar.ready = true;});
+        bar.on('animationcomplete_barrelopen', function () {
+          bar.anims.play('barrellook', true);
+        });
+        bar.on('animationcomplete_barrellook', function () {
+          bar.anims.play('barrelclose', true);
+        });
+        bar.on('animationcomplete_barrelclose', function () {
+          if(bar.hit == true){
+            bar.hit = false;
+          }else{
+            bar.anims.play('barrelpop', true);
+          }
+        });
+        bar.on('animationcomplete_barrelpop', function () {
+          bar.ready = true;
+        });
       });
 
       if(gameState.keys.Z.isDown){
@@ -322,11 +344,13 @@ gameState.sheepspeed = 1;
       //Enemies
         //wolf
       gameState.wolf.getChildren().forEach(function (enemy){
+        console.log(enemy.health);
+        console.log(enemy.body.x)
         if (enemy.body.x > 400 && enemy.body.velocity.x > 1){
-          enemy.body.setVelocityX(-50);
+          enemy.body.setVelocityX(-enemy.speed);
         }
         else if (enemy.body.x < -400 && enemy.body.velocity.x < -1){
-          enemy.body.setVelocityX(50);
+          enemy.body.setVelocityX(enemy.speed);
         }
         if (enemy.body.y > 400 && enemy.body.velocity.y > 1){
           enemy.body.setVelocityY(-50);
@@ -433,47 +457,68 @@ gameState.sheepspeed = 1;
     return;
   }
   musicplayer(name, fadetime){
+  }
+  enimHit(enim, obj){
+    if(enim.wait == false){
+      enim.wait = true;
+      this.time.delayedCall(500,
+        function (enim){
+          enim.wait = false;
+        }, [enim, this]);
+        console.log(obj.strength )
+    enim.health = enim.health - obj.strength;
+    if (enim.health == 0){
+      gameState.wolf.remove(enim, true);
+    }else{
+      var dir;
+      if(enim.body.x > obj.body.x){
+        dir = 1;
+      }else{
+        dir = -1;
+      }
+      console.log(dir)
+      enim.body.setVelocityX(75 * obj.knockback * dir);
+      enim.body.setVelocityY(-25);
+      this.tweens.addCounter({
+        from: enim.body.velocity.x,
+        to: 0,
+        duration: 400,
+        repeat: 0,
+        onUpdate: function (tween){
+          const value = Math.floor(tween.getValue());
+          enim.body.setVelocityX(value);
+        },
+        onCompleteScope: this,
+        onComplete: function (){
+          this.time.delayedCall(obj.stun,
+            function (enim){
+              //change this to AI
+              //
+              //
+              //
+              //
+              //
+              enim.body.setVelocityX(enim.speed*(Phaser.Math.Between(-1, 0)*2 + 1));
+              //
+              //
+              //
+              //
+              //
+              //
+              //
+            }, [enim], this);
+        }
+      }, this);
+    }
 
   }
-
+}
   //ADD Enemies & Bossen
 
 
 
-  Spawnbat(x, y, level){
-    var index = gameState.batindex + 1
-  }
-  Spawnzombie(x, y, level){
 
-  }
-  Spawnslime(x, y, level){
-
-  }
-  Spawnskeleton(x, y, level){
-
-  }
-  Spawnwitch(x, y, level){
-
-  }
-  Spawnbigslime(x, y, level){
-
-  }
-  Spawnsmallslime(x, y, level){
-
-  }
   cameramove(dir){
-    //this.tweens.addCounter({
-      //from: 0,
-      //to: 50,
-    //  duration: 250,
-    //  repeat: 0,
-    //  onUpdate: function (tween){
-    //    const value = Math.floor(tween.getValue());
           gameState.camera.setFollowOffset(-15*dir, 20);
-    //  },
-    //  onComplete: function (tween) {
-    //        gameState.camera.setFollowOffset(tween, 20);
-    //  }
-    //});
   }
 }
