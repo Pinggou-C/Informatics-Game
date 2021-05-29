@@ -155,14 +155,14 @@ gameState.sheepspeed = 1;
         gameState.projectile.getChildren().forEach(function (pro){
           pro.strength = 3;
           pro.knockback = 1;
-          pro.stun = 500;
+          pro.stun = 2000;
         });
         gameState.stick = this.physics.add.group({allowGravity: false});
         gameState.stick.create(200, 100, 'dude', 4);
         gameState.stick.getChildren().forEach(function (sti){
           sti.strength = 1;
           sti.knockback = 3;
-          sti.stun = 500;
+          sti.stun = 1000;
         });
 
   // Camera
@@ -478,7 +478,7 @@ gameState.sheepspeed = 1;
       }
       console.log(dir)
       enim.body.setVelocityX(75 * obj.knockback * dir);
-      enim.body.setVelocityY(-25);
+      enim.body.setVelocityY(-75);
       this.tweens.addCounter({
         from: enim.body.velocity.x,
         to: 0,
