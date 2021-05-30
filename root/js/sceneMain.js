@@ -15,9 +15,13 @@
 
   create() {
     gameState.goalready = true;
+    gameState.switchcooldown = false;
+    gameState.spawntime = 30000;
+    gameState.levstrength = 0;
     gameState.jumpwait = 0;
     gameState.jumptimer = false;
     gameState.wasonfloor = false;
+    this.enemyspawn()
     gameState.velxtween = false;
     gameState.delta;
     this.events.on('pause', function () {
@@ -28,6 +32,7 @@
                 console.log('Scene A resumed');
             })
 //  World
+    this.physics.world.setBounds(-1600, -540, 3200, 1080, true, true, true, true);
     this.add.image(0, 0, 'back');
     gameState.goal = this.add.sprite(0, 0, 'fullscreen');
     gameState.goal.setOrigin(0.5, 0.5);
@@ -79,8 +84,17 @@
     gameState.walls.enableBody = true;
     gameState.walls.create(0, 150, 'wall');
     gameState.walls.create(250, 150, 'wall');
-    gameState.walls.create(-250, 150, 'wall');
     gameState.walls.create(500, 150, 'wall');
+    gameState.walls.create(750, 150, 'wall');
+    gameState.walls.create(1000, 150, 'wall');
+    gameState.walls.create(1250, 150, 'wall');
+    gameState.walls.create(1500, 150, 'wall');
+    gameState.walls.create(-250, 150, 'wall');
+    gameState.walls.create(-500, 150, 'wall');
+    gameState.walls.create(-750, 150, 'wall');
+    gameState.walls.create(-1000, 150, 'wall');
+    gameState.walls.create(-1250, 150, 'wall');
+    gameState.walls.create(-1500, 150, 'wall');
 
 //Lifestock
 gameState.sheepspeed = 1;
@@ -107,17 +121,10 @@ gameState.sheepspeed = 1;
   gameState.wolf = this.physics.add.group();
   gameState.wolf.enableBody = true;
   gameState.wolf.create(100, 100, 'dude', 8);
-  //gameState.wolf.create(100, -100, 'dude', 0);
-  //gameState.wolf.create(100, 0, 'dude', 0);
-  //gameState.wolf.create(-100, 100, 'dude', 0);
-  //gameState.wolf.create(-100, -100, 'dude', 0);
-  //gameState.wolf.create(-100, 0, 'dude', 0);
-  //gameState.wolf.create(0, -100, 'dude', 0);
-  //gameState.wolf.create(0, 0, 'dude', 0);
-  //gameState.wolf.create(0, 100, 'dude', 0);
   gameState.wolf.getChildren().forEach(function (enemy){
     enemy.health = 4;
     enemy.speed = 75;
+    enemy.level = 0;
     enemy.wait = false;
     enemy.body.setVelocityX(Phaser.Math.Between(-1, 0)*100+50);
     enemy.body.setVelocityY(Phaser.Math.Between(-1, 0)*100+50);
@@ -150,6 +157,9 @@ gameState.sheepspeed = 1;
       gameState.player = this.physics.add.sprite(0, 100, 'dude', 4);
       gameState.player.velocity = new Phaser.Math.Vector2(0, 0);
       gameState.player.setOrigin(0.5, 0.5);
+      gameState.player.body.setCollideWorldBounds(true);
+      gameState.player.body.onWorldBounds = true;
+      gameState.player.currentweapon = 0;
       //weapons
         gameState.projectile = this.physics.add.group({allowGravity: false});
         gameState.projectile.getChildren().forEach(function (pro){
@@ -170,7 +180,7 @@ gameState.sheepspeed = 1;
       gameState.camera.startFollow(gameState.player);
       gameState.camera.setLerp(0.075, 0.075);
       gameState.camera.setDeadzone(40, 32);
-      gameState.camera.setBounds(-750, -250, 1500, 500);
+      gameState.camera.setBounds(-1600, -540, 3200, 1080);
       gameState.camera.setFollowOffset(0, 20);
 
 
@@ -187,9 +197,6 @@ gameState.sheepspeed = 1;
 
 // Overlap
     // Player
-        // objects
-
-
         // Enemies
             this.physics.add.overlap(gameState.sheep, gameState.wolf, this.batHit, null, this);
             this.physics.add.overlap(gameState.sheep, gameState.Lion, this.batHit, null, this);
@@ -197,9 +204,9 @@ gameState.sheepspeed = 1;
             this.physics.add.overlap(gameState.sheep, gameState.scorpion, this.batHit, null, this);
     // Enemie
         //Objects
-        //this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, [hitstrength, knockback, stun], this);
-          this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, null, this);
-          this.physics.add.overlap(gameState.wolf, gameState.stick, this.enimHit, null, this);
+          //this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, [hitstrength, knockback, stun], this);
+            this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, null, this);
+            this.physics.add.overlap(gameState.wolf, gameState.stick, this.enimHit, null, this);
 
 
 // DEBUG:
@@ -211,6 +218,40 @@ gameState.sheepspeed = 1;
     gameState.cursors = this.input.keyboard.createCursorKeys();
     gameState.keys = this.input.keyboard.addKeys('Z,X,C,V,SPACE');
     gameState.uikeys = this.input.keyboard.addKeys('ENTER,SPACE, CTRL,P,TAB,ALT,BACKSPACE,SHIFT');
+    var spawntimer = this.time.addEvent({
+      delay: gameState.spawntime,                // ms
+      callback: function (){
+        if(gameState.spawntime > 7500){
+          gameState.spawntime = -100
+        }
+        gameState.levstrength += 1;
+        console.log(Math.round(0.5 * (3 * gameState.levstrength - 2 * Math.sqrt(2 * gameState.levstrength) - Math.sqrt(0.25 * gameState.levstrength) * 2))+ 2 + 'ii')
+        for(let i = Math.round(0.5 * (3 * gameState.levstrength - 2 * Math.sqrt(2 * gameState.levstrength) - Math.sqrt(0.25 * gameState.levstrength) * 2))+ 2 ; i > 0; i-- ){
+          let xx = Phaser.Math.Between(0, 1);
+          let yy = Phaser.Math.Between(0, 1);
+          this.limx1 = gameState.player.body.x + 370;
+          this.limy1 = gameState.player.body.y + 230;
+          this.limx0 = gameState.player.body.x - 370;
+          this.limy0 = gameState.player.body.y - 230;
+          let posx = Phaser.Math.Between(this['limx' + xx.toString()], this['limx' + xx.toString()] + (xx * 2 -1) * 100);
+          let posy = Phaser.Math.Between(this['limy' + yy.toString()], this['limy' + yy.toString()] + (yy * 2 -1) * 100);
+          console.log(posx)
+          gameState.wolf.create(posx, 100, 'dude', 8);
+        }
+        gameState.wolf.getChildren().forEach(function (enemy){
+          if (enemy.level === undefined){
+            enemy.health = 4;
+            enemy.speed = 75;
+            enemy.level = gameState.levstrength;
+            enemy.wait = false;
+            enemy.body.setVelocityX(enemy.speed);
+          }
+
+        });
+      },
+      callbackScope: this,
+      repeat: -1
+    });
 
 
 
@@ -223,6 +264,7 @@ gameState.sheepspeed = 1;
     }else{
 // PlayerControl
       //place goal
+
       gameState.barrel.getChildren().forEach(function (bar){
         if(bar.ready){
           bar.anims.play('barrelopen', true);
@@ -245,7 +287,17 @@ gameState.sheepspeed = 1;
           bar.ready = true;
         });
       });
-
+      if(gameState.keys.C.isDown && gameState.switchcooldown == false){
+        gameState.player.currentweapon += 1;
+        gameState.switchcooldown = true;
+        this.time.delayedCall(250,
+        function (){
+          gameState.switchcooldown = false;
+        }, null, this);
+        if (gameState.player.currentweapon>3){
+          gameState.player.currentweapon = 0;
+        }this.switchweapon(gameState.player.currentweapon);
+      }
       if(gameState.keys.Z.isDown){
         if(gameState.goalready == true){
           gameState.goal.x = gameState.player.body.x+16;
@@ -290,21 +342,26 @@ gameState.sheepspeed = 1;
       }
       //left right
       if (gameState.cursors.left.isDown){
-        if(gameState.player.body.velocity.x > -80){
-          gameState.tweenx.stop();
+        if(gameState.player.body.velocity.x > -100){
+          if(gameState.velxtween == true){
+            gameState.tweenx.stop();
+          }
           this.cameramove(-1);
           gameState.velxtween = false;
           if(gameState.player.body.velocity.x > 0){
             gameState.player.body.velocity.x-= 1600 * ((delta - gameState.delta)/1000);
-
+            gameState.player.flipX = true;
           }else{
+            gameState.player.flipX = false;
             gameState.player.body.velocity.x-= 600 * ((delta - gameState.delta)/1000);
 
           }
         }
       }else if (gameState.cursors.right.isDown){
-        if(gameState.player.body.velocity.x < 80){
-          gameState.tweenx.stop();
+        if(gameState.player.body.velocity.x < 100){
+          if(gameState.velxtween == true){
+            gameState.tweenx.stop();
+          }
           gameState.velxtween = false;
           this.cameramove(1);
           if(gameState.player.body.velocity.x < 0){
@@ -329,7 +386,7 @@ gameState.sheepspeed = 1;
           }
         });
       }if (gameState.jumptimer == true && gameState.wasonfloor == true){
-        gameState.player.setVelocityY(-300);
+        gameState.player.setVelocityY(-301);
         gameState.wasonfloor = false;
         gameState.jumptimer = false;
       }else if (gameState.cursors.down.isDown){
@@ -344,8 +401,11 @@ gameState.sheepspeed = 1;
       //Enemies
         //wolf
       gameState.wolf.getChildren().forEach(function (enemy){
-        console.log(enemy.health);
-        console.log(enemy.body.x)
+        if(enemy.body.velocity.x > 0){
+          enemy.flipX = false;
+        }else if(enemy.body.velocity.x < 0){
+          enemy.flipX = true;
+        }
         if (enemy.body.x > 400 && enemy.body.velocity.x > 1){
           enemy.body.setVelocityX(-enemy.speed);
         }
@@ -368,6 +428,11 @@ gameState.sheepspeed = 1;
 
     //sheep AI
     gameState.sheep.getChildren().forEach(function (shee, scene){
+      if(shee.body.velocity.x > 0){
+        shee.flipX = true;
+      }else if(shee.body.velocity.x < 0){
+        shee.flipX = false;
+      }
       if (shee.body.x > gameState.goal.x + 100){
         shee.body.setVelocityX(-shee.speed*gameState.sheepspeed);
       }else if (shee.body.x < gameState.goal.x - 100){
@@ -465,7 +530,6 @@ gameState.sheepspeed = 1;
         function (enim){
           enim.wait = false;
         }, [enim, this]);
-        console.log(obj.strength )
     enim.health = enim.health - obj.strength;
     if (enim.health == 0){
       gameState.wolf.remove(enim, true);
@@ -476,7 +540,6 @@ gameState.sheepspeed = 1;
       }else{
         dir = -1;
       }
-      console.log(dir)
       enim.body.setVelocityX(75 * obj.knockback * dir);
       enim.body.setVelocityY(-75);
       this.tweens.addCounter({
@@ -514,11 +577,16 @@ gameState.sheepspeed = 1;
   }
 }
   //ADD Enemies & Bossen
+  enemyspawn(){
 
+  }
 
 
 
   cameramove(dir){
           gameState.camera.setFollowOffset(-15*dir, 20);
+  }
+  switchweapon(newweapon){
+
   }
 }
