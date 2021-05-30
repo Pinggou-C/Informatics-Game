@@ -1,6 +1,5 @@
-[Sat May 29 21:21:08.661442 2021] [mpm_winnt:notice] [pid 17384:tid 584] AH00455: Apache/2.4.6 (Win32) PHP/5.4.17 configured -- resuming normal operations
-[Sat May 29 21:21:08.661442 2021] [mpm_winnt:notice] [pid 17384:tid 584] AH00456: Apache Lounge VC10 Server built: Jul 16 2013 11:15:41
-[Sat May 29 21:21:08.661442 2021] [core:notice] [pid 17384:tid 584] AH00094: Command line: 'C:\\Users\\Pinggou\\Documents\\GitHub\\Informatics-Game/apache2/bin/httpd_usbwv8.exe -d C:/Users/Pinggou/Documents/GitHub/Informatics-Game/apache2'
-[Sat May 29 21:21:08.663950 2021] [mpm_winnt:notice] [pid 17384:tid 584] AH00418: Parent: Created child process 3516
-[Sat May 29 21:21:09.370145 2021] [mpm_winnt:notice] [pid 3516:tid 772] AH00354: Child: Starting 64 worker threads.
-[Sat May 29 21:57:35.818484 2021] [core:error] [pid 3516:tid 1284] (20024)The given path is misformatted or contained invalid characters: [client ::1:54411] AH00127: Cannot map GET /initialize.step%20(http:/localhost:8080/js/phaser.min.js?hffd=%3C?=time()?%3E:1:789770) HTTP/1.1 to file
+[Sun May 30 10:59:53.946879 2021] [mpm_winnt:notice] [pid 9728:tid 768] AH00455: Apache/2.4.6 (Win32) PHP/5.4.17 configured -- resuming normal operations
+[Sun May 30 10:59:53.946879 2021] [mpm_winnt:notice] [pid 9728:tid 768] AH00456: Apache Lounge VC10 Server built: Jul 16 2013 11:15:41
+[Sun May 30 10:59:53.946879 2021] [core:notice] [pid 9728:tid 768] AH00094: Command line: 'C:\\Users\\Pinggou\\Documents\\GitHub\\Informatics-Game/apache2/bin/httpd_usbwv8.exe -d C:/Users/Pinggou/Documents/GitHub/Informatics-Game/apache2'
+[Sun May 30 10:59:53.949889 2021] [mpm_winnt:notice] [pid 9728:tid 768] AH00418: Parent: Created child process 19032
+[Sun May 30 10:59:54.517152 2021] [mpm_winnt:notice] [pid 19032:tid 760] AH00354: Child: Starting 64 worker threads.
