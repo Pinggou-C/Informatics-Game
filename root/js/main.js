@@ -21,7 +21,7 @@ window.onload=function()
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_HORIZONTALLY
     },
-        scene: [Splash, SceneMain, Pause, Menu]
+        scene: [Splash, SceneMain, Pause, Menu, Gameover]
     };
     game = new Phaser.Game(config);
 }

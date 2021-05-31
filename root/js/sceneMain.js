@@ -14,6 +14,7 @@
   }
 
   create() {
+    gameState.livestock = 10;
     gameState.goalready = true;
     gameState.switchcooldown = false;
     gameState.spawntime = 30000;
@@ -125,7 +126,12 @@ gameState.sheepspeed = 1;
     enemy.health = 4;
     enemy.speed = 75;
     enemy.level = 0;
+    enemy.canattack = true;
+    enemy.attack = false;
+    enemy.stun = false;
+    enemy.picking = false;
     enemy.wait = false;
+    enemy.target = null;
     enemy.body.setVelocityX(Phaser.Math.Between(-1, 0)*100+50);
     enemy.body.setVelocityY(Phaser.Math.Between(-1, 0)*100+50);
   });
@@ -401,24 +407,87 @@ gameState.sheepspeed = 1;
       //Enemies
         //wolf
       gameState.wolf.getChildren().forEach(function (enemy){
+        if (enemy.target == null){
+          enemy.target = gameState.sheep.getChildren()[Phaser.Math.Between(0, gameState.sheep.getLength() -1)];
+          let hi = Phaser.Math.Between(0, 1)
+          if(hi == 0){
+            enemy.targetpos = Phaser.Math.Between(enemy.target.body.x + 250, enemy.target.body.x + 40)
+          }
+          else{
+            enemy.targetpos = Phaser.Math.Between(enemy.target.body.x - 250, enemy.target.body.x -40)
+          }
+          console.log(enemy.targetpos);
+        }
         if(enemy.body.velocity.x > 0){
           enemy.flipX = false;
-        }else if(enemy.body.velocity.x < 0){
+        }
+        else if(enemy.body.velocity.x < 0){
           enemy.flipX = true;
         }
-        if (enemy.body.x > 400 && enemy.body.velocity.x > 1){
-          enemy.body.setVelocityX(-enemy.speed);
+        if (enemy.stun == false){
+          if(enemy.body.x <= enemy.targetpos + 10 && enemy.body.x >= enemy.targetpos - 10){
+            enemy.body.setVelocityX(0);
+            if(enemy.body.x <= enemy.target.body.x + 50 && enemy.body.x >= enemy.target.body.x - 50){
+              enemy.targetpos = enemy.target.body.x;
+              if(enemy.body.x <= enemy.target.body.x + 20 && enemy.body.x >= enemy.target.body.x - 20){
+                if(enemy.canattack == true){
+                //start attack anim
+                enemy.canattack = false;
+                this.time.delayedCall(1000,
+                function (enemy){
+                  enemy.attack = true;
+                  //start attack anim
+                  this.time.delayedCall(2000,
+                  function (enemy){
+                    enemy.canattack = true;
+                    //start attack anim
+                  }, [enemy], this);
+                }, [enemy], this);
+                }
+              }
+            }
+            else if(enemy.picking == false){
+              enemy.picking = true;
+              this.time.delayedCall(Phaser.Math.Between(2000, 8000),
+              function (enemy){
+                enemy.picking = false;
+                let hi = Phaser.Math.Between(0, 2)
+                if(hi == 0){
+                  enemy.targetpos = Phaser.Math.Between(enemy.target.body.x -50, enemy.target.body.x + 50)
+                }
+                else if(hi == 1){
+                  enemy.targetpos = Phaser.Math.Between(enemy.target.body.x + 150, enemy.target.body.x + 40)
+                }
+                else{
+                  enemy.targetpos = Phaser.Math.Between(enemy.target.body.x - 150, enemy.target.body.x -40)
+                }
+                console.log(enemy.targetpos);
+              }, [enemy], this);
+            }
+          }else if(enemy.attack == false){
+            if (enemy.body.x > enemy.targetpos){
+              if((enemy.body.x >= enemy.target.body.x - 40 && enemy.body.x <= enemy.target.body.x + 40)&&(enemy.body.x >= enemy.targetpos - 40 && enemy.body.x <= enemy.targetpos + 40)){
+                enemy.body.setVelocityX(-enemy.speed / 2);
+              }else{
+                enemy.body.setVelocityX(-enemy.speed);
+              }
+            }
+            else if (enemy.body.x < enemy.targetpos){
+              if((enemy.body.x >= enemy.target.body.x - 40 && enemy.body.x <= enemy.target.body.x + 40)&&(enemy.body.x >= enemy.targetpos - 40 && enemy.body.x <= enemy.targetpos + 40)){
+                enemy.body.setVelocityX(enemy.speed / 2);
+              }else{
+                enemy.body.setVelocityX(enemy.speed);
+              }
+            }
+            if (enemy.body.y > 400){
+              enemy.body.setVelocityY(-50);
+            }
+            else if (enemy.body.y < -400){
+              enemy.body.setVelocityY(50);
+            }
+          }
         }
-        else if (enemy.body.x < -400 && enemy.body.velocity.x < -1){
-          enemy.body.setVelocityX(enemy.speed);
-        }
-        if (enemy.body.y > 400 && enemy.body.velocity.y > 1){
-          enemy.body.setVelocityY(-50);
-        }
-        else if (enemy.body.y < -400 && enemy.body.velocity.x < -1){
-          enemy.body.setVelocityY(50);
-        }
-    })
+      }, this)
       //lion
 
       //scorpion
@@ -486,7 +555,7 @@ gameState.sheepspeed = 1;
     gameState.delta = delta;
   }
   batHit (shee, enemie){
-    if(shee.hitready == true){
+    if(shee.hitready == true && enemie.attack == true){
       shee.tint = 0xff0000;;
       shee.hitready = false;
       shee.live = shee.live - 1;
@@ -498,6 +567,11 @@ gameState.sheepspeed = 1;
           }, [shee], this);
       }else{
         gameState.sheep.remove(shee, true);
+        gameState.livestock -= 1;
+        if(gameState.livestock == 0){
+          game.scene.pause('SceneMain');
+          game.scene.start('Gameover');
+        }
       }
 
     //gameState.camera.shake(200, 0.005);
@@ -525,6 +599,7 @@ gameState.sheepspeed = 1;
   }
   enimHit(enim, obj){
     if(enim.wait == false){
+      enim.stun = true;
       enim.wait = true;
       this.time.delayedCall(500,
         function (enim){
@@ -555,20 +630,9 @@ gameState.sheepspeed = 1;
         onComplete: function (){
           this.time.delayedCall(obj.stun,
             function (enim){
-              //change this to AI
-              //
-              //
-              //
-              //
-              //
-              enim.body.setVelocityX(enim.speed*(Phaser.Math.Between(-1, 0)*2 + 1));
-              //
-              //
-              //
-              //
-              //
-              //
-              //
+              enim.target = null;
+              enim.stun = false;
+
             }, [enim], this);
         }
       }, this);
