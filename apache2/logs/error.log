@@ -1,5 +1,5 @@
-[Sun May 30 10:59:53.946879 2021] [mpm_winnt:notice] [pid 9728:tid 768] AH00455: Apache/2.4.6 (Win32) PHP/5.4.17 configured -- resuming normal operations
-[Sun May 30 10:59:53.946879 2021] [mpm_winnt:notice] [pid 9728:tid 768] AH00456: Apache Lounge VC10 Server built: Jul 16 2013 11:15:41
-[Sun May 30 10:59:53.946879 2021] [core:notice] [pid 9728:tid 768] AH00094: Command line: 'C:\\Users\\Pinggou\\Documents\\GitHub\\Informatics-Game/apache2/bin/httpd_usbwv8.exe -d C:/Users/Pinggou/Documents/GitHub/Informatics-Game/apache2'
-[Sun May 30 10:59:53.949889 2021] [mpm_winnt:notice] [pid 9728:tid 768] AH00418: Parent: Created child process 19032
-[Sun May 30 10:59:54.517152 2021] [mpm_winnt:notice] [pid 19032:tid 760] AH00354: Child: Starting 64 worker threads.
+[Mon May 31 09:32:24.679406 2021] [mpm_winnt:notice] [pid 11252:tid 780] AH00455: Apache/2.4.6 (Win32) PHP/5.4.17 configured -- resuming normal operations
+[Mon May 31 09:32:24.679406 2021] [mpm_winnt:notice] [pid 11252:tid 780] AH00456: Apache Lounge VC10 Server built: Jul 16 2013 11:15:41
+[Mon May 31 09:32:24.679406 2021] [core:notice] [pid 11252:tid 780] AH00094: Command line: 'C:\\Users\\Pinggou\\Documents\\GitHub\\Informatics-Game/apache2/bin/httpd_usbwv8.exe -d C:/Users/Pinggou/Documents/GitHub/Informatics-Game/apache2'
+[Mon May 31 09:32:24.682417 2021] [mpm_winnt:notice] [pid 11252:tid 780] AH00418: Parent: Created child process 12416
+[Mon May 31 09:32:25.288800 2021] [mpm_winnt:notice] [pid 12416:tid 600] AH00354: Child: Starting 64 worker threads.
