@@ -11,9 +11,9 @@ class Pause extends Phaser.Scene {
       var pauserect = this.add.graphics({ fillStyle: { color: 0x000000 } })
       .setAlpha(0);
       pauserect.setScrollFactor(0,0);
-      var coverScreen = new Phaser.Geom.Rectangle(0, 0, game.config.width, game.config.height);
+      var coverScreen = new Phaser.Geom.Rectangle(0, 0, 640, 360);
       pauserect.fillRectShape(coverScreen);
-      var text = this.add.text(game.config.width/3, game.config.height/3, "Paused", style);
+      var text = this.add.text(640/3, 120, "Paused", style);
       text.alpha = 0;
       text.setAlign('left');
       text.setScrollFactor(0,0);
