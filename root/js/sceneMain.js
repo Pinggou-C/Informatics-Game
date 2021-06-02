@@ -11,15 +11,17 @@
     this.load.spritesheet('hay','assets/world/haybale.png',{ frameWidth: 34, frameHeight: 34, endFrame: 41});
     this.load.image('back','assets/1.png');
     this.load.image('wall', 'assets/world/Utitled.png', 250, 50);
-    this.load.spritesheet('wolf','assets/entities/wolf.png',{ frameWidth: 42, frameHeight: 28, endFrame: 9});
+    this.load.spritesheet('wolf','assets/entities/wolfs.png',{ frameWidth: 42, frameHeight: 28, endFrame: 10});
     this.load.spritesheet('sheep','assets/entities/goat.png',{ frameWidth: 40, frameHeight: 30, endFrame: 37});
   }
 
   create() {
+    game.scale.resize(640, 360);
+    gameState.sceneGameover = this.scene.get('Gameover');
     gameState.livestock = 10;
     gameState.goalready = true;
     gameState.switchcooldown = false;
-    gameState.spawntime = 300000;
+    gameState.spawntime = 3000;
     gameState.levstrength = 0;
     gameState.jumpwait = 0;
     gameState.jumptimer = false;
@@ -78,12 +80,42 @@
     this.anims.create({
       key: 'sheepidle3',
       frames: this.anims.generateFrameNumbers('sheep', { start: 29, end: 37 }),
-      frameRate: 10,
+      frameRate: 6,
       repeat: 0
     });
     this.anims.create({
       key: 'sheepstand',
       frames: this.anims.generateFrameNumbers('sheep', { start: 0, end: 0 }),
+      frameRate: 1,
+      repeat: 0
+    });
+    this.anims.create({
+      key: 'wolfattack',
+      frames: this.anims.generateFrameNumbers('wolf', { start: 4, end: 10 }),
+      frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: 'wolfstand',
+      frames: this.anims.generateFrameNumbers('wolf', { start: 0, end: 0 }),
+      frameRate: 1,
+      repeat: 0
+    });
+    this.anims.create({
+      key: 'wolfwalk',
+      frames: this.anims.generateFrameNumbers('wolf', { start: 0, end: 4 }),
+      frameRate: 4,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'wolfdie',
+      frames: this.anims.generateFrameNumbers('wolf', { start: 0, end: 0 }),
+      frameRate: 1,
+      repeat: 0
+    });
+    this.anims.create({
+      key: 'wolfjump',
+      frames: this.anims.generateFrameNumbers('wolf', { start: 0, end: 0 }),
       frameRate: 1,
       repeat: 0
     });
@@ -163,7 +195,7 @@ gameState.sheepspeed = 1;
   gameState.sheep.create(0, 50, 'sheep', 0);
   gameState.sheep.create(0, 50, 'sheep', 0);
   gameState.sheep.getChildren().forEach(function (shee){
-    shee.live = 3;
+    shee.live = 1;
     shee.on('animationcomplete', function (anim, frame) {
       this.emit('animationcomplete_' + anim.key, anim, frame);
     }, shee);
@@ -185,6 +217,7 @@ gameState.sheepspeed = 1;
     enemy.targets = 0;
     enemy.canattack = true;
     enemy.attack = false;
+    enemy.walk = false;
     enemy.stun = false;
     enemy.picking = false;
     enemy.wait = false;
@@ -231,7 +264,7 @@ gameState.sheepspeed = 1;
           pro.stun = 2000;
         });
         gameState.stick = this.physics.add.group({allowGravity: false});
-        gameState.stick.create(200, 100, 'dude', 4);
+        //gameState.stick.create(200, 100, 'dude', 4);
         gameState.stick.getChildren().forEach(function (sti){
           sti.strength = 1;
           sti.knockback = 3;
@@ -308,6 +341,13 @@ gameState.sheepspeed = 1;
             enemy.level = gameState.levstrength;
             enemy.wait = false;
             enemy.body.setVelocityX(enemy.speed);
+            enemy.targets = 0;
+            enemy.canattack = true;
+            enemy.attack = false;
+            enemy.walk = false;
+            enemy.stun = false;
+            enemy.picking = false;
+            enemy.target = null;
           }
 
         });
@@ -326,6 +366,11 @@ gameState.sheepspeed = 1;
     if (this.game.paused) {
       return;
     }else{
+      gameState.livestock = gameState.sheep.countActive();
+      if(gameState.livestock == 0){
+        gameState.sceneGameover.dead();
+        game.scene.pause('SceneMain');
+      }
 // PlayerControl
       //place goal
 
@@ -460,85 +505,81 @@ gameState.sheepspeed = 1;
       //sheep AI
       gameState.sheep.getChildren().forEach(function (shee, scene){
         shee.on('animationcomplete_sheepdie', function () {
-
             gameState.sheep.killAndHide(shee);
             gameState.sheep.remove(shee, true, true);
-            gameState.livestock = gameState.sheep.countActive();
-            if(gameState.livestock == 0){
-              game.scene.pause('SceneMain');
-              game.scene.start('Gameover');
-            }
         }, this);
-        if(shee.body.velocity.x > 0){
-          shee.flipX = true;
-        }else if(shee.body.velocity.x < 0){
-          shee.flipX = false;
-        }
-        if(shee.body.velocity.x !=0 && shee.iswalk == false){
-          console.log('walk');
-          shee.anims.play('sheepwalk', true);
-          shee.iswalk = true;
-        }
-        if (shee.body.x > gameState.goal.x + 100){
-          shee.body.setVelocityX(-shee.speed*gameState.sheepspeed);
-        }else if (shee.body.x < gameState.goal.x - 100){
-          shee.body.setVelocityX(shee.speed*gameState.sheepspeed);
-        }else if(shee.timer == true){
-          shee.timer=false;
-           shee.tar = Phaser.Math.Between(0, 2);
-           console.log(shee.tar);
-            if (shee.tar == 0 || shee.tar == 3){
-              //idle
-              shee.wait = 1;
-              shee.body.setVelocityX(0);
-              shee.iswalk = false;
-              shee.anims.play('sheepstand');
-            }else if(shee.tar == 1){
-              //left
-              shee.wait = 0.75;
-              shee.body.setVelocityX(shee.speed*-gameState.sheepspeed);
-            }else if(shee.tar == 2){
-              //right
-              shee.wait = 0.75;
-              shee.body.setVelocityX(shee.speed*gameState.sheepspeed);
-            }
-            let ih = Phaser.Math.Between(7500, 15000);
-            this.time.delayedCall(ih * shee.wait,
-              function (shee){
-                shee.timer = true;
-              }, [shee], this);
-              if(shee.wait == 1){
-                let li = Math.round(ih/7000);
-              this.time.delayedCall(4000,
-                function (shee, li){
-                  if(gameState.sheep.contains(shee) && shee.alive == true){
-                    shee.anims.play('sheepidle'+Phaser.Math.Between(1, 3).toString(), true)
-                    let wi = li - 1;
-                    if (wi > 0){
-                      this.time.delayedCall(4000,
-                        function (shee, wi){
-                          if(gameState.sheep.contains(shee) && shee.alive == true){
-                            shee.anims.play('sheepidle'+Phaser.Math.Between(1, 3).toString(), true)
+        if(shee.live != 0){
+          if(shee.body.velocity.x > 0){
+            shee.flipX = true;
+          }else if(shee.body.velocity.x < 0){
+            shee.flipX = false;
+          }
+          if(shee.body.velocity.x !=0 && shee.iswalk == false){
+            console.log('walk');
+            shee.anims.play('sheepwalk', true);
+            shee.iswalk = true;
+          }
+          if (shee.body.x > gameState.goal.x + 100){
+            shee.body.setVelocityX(-shee.speed*gameState.sheepspeed);
+          }else if (shee.body.x < gameState.goal.x - 100){
+            shee.body.setVelocityX(shee.speed*gameState.sheepspeed);
+          }else if(shee.timer == true){
+            shee.timer=false;
+             shee.tar = Phaser.Math.Between(0, 2);
+             console.log(shee.tar);
+              if (shee.tar == 0 || shee.tar == 3){
+                //idle
+                shee.wait = 1;
+                shee.body.setVelocityX(0);
+                shee.iswalk = false;
+                shee.anims.play('sheepstand', true);
+              }else if(shee.tar == 1){
+                //left
+                shee.wait = 0.75;
+                shee.body.setVelocityX(shee.speed*-gameState.sheepspeed);
+              }else if(shee.tar == 2){
+                //right
+                shee.wait = 0.75;
+                shee.body.setVelocityX(shee.speed*gameState.sheepspeed);
+              }
+              let ih = Phaser.Math.Between(7500, 15000);
+              this.time.delayedCall(ih * shee.wait,
+                function (shee){
+                  shee.timer = true;
+                }, [shee], this);
+                if(shee.wait == 1){
+                  let li = Math.round(ih/7000);
+                this.time.delayedCall(4000,
+                  function (shee, li){
+                    if(gameState.sheep.contains(shee) && shee.alive == true){
+                      shee.anims.play('sheepidle'+Phaser.Math.Between(1, 3).toString(), true)
+                      let wi = li - 1;
+                      if (wi > 0){
+                        this.time.delayedCall(4000,
+                          function (shee, wi){
+                            if(gameState.sheep.contains(shee) && shee.alive == true){
+                              shee.anims.play('sheepidle'+Phaser.Math.Between(1, 3).toString(), true)
+                            }
+                            }, [shee, wi], this);
                           }
-                          }, [shee, wi], this);
                         }
-                      }
-                  }, [shee, li], this);
-                }
-        }else if(shee.body.velocity.x != 0 && shee.tar == 0 && shee.isdo == false){
-          this.time.delayedCall(Phaser.Math.Between(1000, 4000),
-          function (shee){
-            if(shee.body.velocity.x != 0 && shee.tar == 0){
-              shee.body.setVelocityX(0);
-            }
-          }, [shee], this);
-        }
-      //  if (shee.body.y > gameState.goal.y + 100 && shee.body.velocity.y > 1){
-      //    shee.body.setVelocityY(-shee.speed);
-      //  }
-      //  else if (shee.body.y < gameState.goal.y - 100 && shee.body.velocity.x < -1){
-      //    shee.body.setVelocityY(shee.speed);
-      //  }
+                    }, [shee, li], this);
+                  }
+          }else if(shee.body.velocity.x != 0 && shee.tar == 0 && shee.isdo == false){
+            this.time.delayedCall(Phaser.Math.Between(1000, 4000),
+            function (shee){
+              if(shee.body.velocity.x != 0 && shee.tar == 0){
+                shee.body.setVelocityX(0);
+              }
+            }, [shee], this);
+          }
+        //  if (shee.body.y > gameState.goal.y + 100 && shee.body.velocity.y > 1){
+        //    shee.body.setVelocityY(-shee.speed);
+        //  }
+        //  else if (shee.body.y < gameState.goal.y - 100 && shee.body.velocity.x < -1){
+        //    shee.body.setVelocityY(shee.speed);
+        //  }
+      }
     }, this)
       }
       //camera
@@ -566,16 +607,25 @@ gameState.sheepspeed = 1;
         else if(enemy.body.velocity.x < 0){
           enemy.flipX = false;
         }
+        if(enemy.body.velocity.x != 0 && enemy.walk == false && (enemy.canattack == true && enemy.attack == false)){
+          enemy.walk = true;
+          enemy.anims.play('wolfwalk', true);
+        }
         if (enemy.stun == false){
           if(gameState.sheep.contains(enemy.target)){
             if(enemy.body.x <= enemy.targetpos + 10 && enemy.body.x >= enemy.targetpos - 10){
               enemy.body.setVelocityX(0);
+              enemy.walk = false;
+              if(enemy.canattack == true){
+                enemy.anims.play('wolfstand', true);
+              }
               if(enemy.body.x <= enemy.target.body.x + 60 && enemy.body.x >= enemy.target.body.x - 60){
                 enemy.targetpos = enemy.target.body.x;
                 if(enemy.body.x <= enemy.target.body.x + 20 && enemy.body.x >= enemy.target.body.x - 20){
                   if(enemy.canattack == true){
                   //start attack anim
                   enemy.canattack = false;
+                  enemy.anims.play('wolfattack', true);
                   this.time.delayedCall(1000,
                   function (enemy){
                     enemy.attack = true;
@@ -661,6 +711,7 @@ gameState.sheepspeed = 1;
   }
   batHit (shee, enemie){
     if(shee.hitready == true && enemie.attack == true){
+      if(enemie.target == shee){
       shee.tint = 0xff0000;;
       shee.hitready = false;
       shee.live = shee.live - 1;
@@ -674,7 +725,7 @@ gameState.sheepspeed = 1;
         enemie.target = null;
         shee.alive = false;
         shee.anims.play('sheepdie', true);
-
+      }
       }
 
     //gameState.camera.shake(200, 0.005);
