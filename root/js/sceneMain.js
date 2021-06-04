@@ -13,6 +13,7 @@
     this.load.image('wall', 'assets/world/Utitled.png', 250, 50);
     this.load.spritesheet('wolf','assets/entities/wolfs.png',{ frameWidth: 42, frameHeight: 28, endFrame: 10});
     this.load.spritesheet('sheep','assets/entities/goat.png',{ frameWidth: 40, frameHeight: 30, endFrame: 37});
+    this.load.spritesheet('eagle','assets/entities/eagle.png',{ frameWidth: 46, frameHeight: 37, endFrame: 14});
   }
 
   create() {
@@ -41,6 +42,24 @@
     this.add.image(0, 0, 'back');
     gameState.goal = this.add.sprite(0, 0, 'fullscreen');
     gameState.goal.setOrigin(0.5, 0.5);
+    this.anims.create({
+      key: 'eaglefly',
+      frames: this.anims.generateFrameNumbers('eagle', { start: 0, end: 5 }),
+      frameRate: 4,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'eagledive',
+      frames: this.anims.generateFrameNumbers('eagle', { start: 7, end: 14 }),
+      frameRate: 4,
+      repeat: 0
+    });
+    this.anims.create({
+      key: 'eagleidle',
+      frames: this.anims.generateFrameNumbers('sheep', { start: 6, end: 6 }),
+      frameRate: 4,
+      repeat: 0
+    });
     this.anims.create({
       key: 'sheepwalk',
       frames: this.anims.generateFrameNumbers('sheep', { start: 0, end: 3 }),
@@ -222,16 +241,30 @@ gameState.sheepspeed = 1;
     enemy.picking = false;
     enemy.wait = false;
     enemy.target = null;
-    enemy.body.setVelocityX(Phaser.Math.Between(-1, 0)*100+50);
-    enemy.body.setVelocityY(Phaser.Math.Between(-1, 0)*100+50);
+
   });
   gameState.wolf.setOrigin(0.5, 0.5);
+  gameState.eagle = this.physics.add.group({allowGravity: false});
+  gameState.eagle.enableBody = true;
+  gameState.eagle.create(100, 100, 'eagle', 0);
+  gameState.eagle.getChildren().forEach(function (enemy){
+    enemy.health = 2;
+    enemy.speed = 75;
+    enemy.level = 0;
+    enemy.targets = 0;
+    enemy.canattack = true;
+    enemy.attack = false;
+    enemy.fly = false;
+    enemy.stun = false;
+    enemy.picking = false;
+    enemy.wait = false;
+    enemy.target = null;
+    enemy.body.setGravity(0);
+  });
+  gameState.eagle.setOrigin(0.5, 0.5);
   gameState.Lion = this.physics.add.group();
   gameState.Lion.enableBody = true;
   gameState.Lion.physicsBodyType = Phaser.Physics.ARCADE;
-  gameState.eagle = this.add.group();
-  gameState.eagle.enableBody = true;
-  gameState.eagle.physicsBodyType = Phaser.Physics.ARCADE;
   gameState.scorpion = this.add.group();
   gameState.scorpion.enableBody = true;
   gameState.scorpion.physicsBodyType = Phaser.Physics.ARCADE;
@@ -695,7 +728,126 @@ gameState.sheepspeed = 1;
       //scorpion
 
       //eagle
+      gameState.eagle.getChildren().forEach(function (enemy){
+        console.log(enemy.body.x);
+        console.log(enemy.body.y);
+        if (enemy.target == null){
+          enemy.target = gameState.sheep.getChildren()[Phaser.Math.Between(0, gameState.sheep.getLength() -1)];
+          let hi = Phaser.Math.Between(0, 1)
+          if(hi == 0){
+            enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 350, enemy.target.body.x + 75)
+            enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 250, enemy.target.body.y - 100)
+          }
+          else{
+            enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 350, enemy.target.body.x - 75)
+            enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 250, enemy.target.body.y - 100)
+          }
+        }
+        if(enemy.body.velocity.x > 0){
+          enemy.flipX = true;
+        }
+        else if(enemy.body.velocity.x < 0){
+          enemy.flipX = false;
+        }
+        if(enemy.canattack == true && enemy.fly==false){
+          enemy.fly = true;
+          enemy.anims.play('eaglefly', true);
+        }
+        if (enemy.stun == false){
+          if(gameState.sheep.contains(enemy.target)){
+            if((enemy.body.x <= enemy.targetposx + 10 && enemy.body.x >= enemy.targetposx - 10)&&(enemy.body.y <= enemy.targetposy + 10 && enemy.body.y >= enemy.targetposy - 10)){
+              enemy.body.setVelocityY(0);
+              enemy.body.setVelocityX(0);
+              enemy.fly = false;
+              if(enemy.canattack == true){
 
+              }
+              if(enemy.body.x <= enemy.target.body.x + 60 && enemy.body.x >= enemy.target.body.x - 60){
+
+                if(enemy.body.x <= enemy.target.body.x + 175 && enemy.body.x >= enemy.target.body.x + 125 && enemy.wantattack == true && enemy.canattack == true && enemy.body.y <= enemy.target.body.y - 200 && enemy.body.y >= enemy.target.body.y - 100){
+                  enemy.wantattack = false;
+                  enemy.canattack = false;
+                  enemy.setVelocityY((enemy.target.body.y - enemy.body.y)/((enemy.target.body.x - enemy.body.x) / enemy.speed));
+                  enemy.setVelocityX(-enemy.speed);
+                  enemy.anims.play('eagledive', true);
+                  this.time.delayedCall(1000,
+                  function (enemy){
+                    enemy.attack = true;
+                    //start attack anim
+                    this.time.delayedCall(300,
+                    function (enemy){
+                      enemy.attack = false;
+                      //start attack anim
+                    }, [enemy], this);
+                    this.time.delayedCall(2000,
+                    function (enemy){
+                      enemy.canattack = true;
+                      //start attack anim
+                    }, [enemy], this);
+                  }, [enemy], this);
+                }else if(enemy.body.x <= enemy.target.body.x - 125 && enemy.body.x >= enemy.target.body.x - 175 && enemy.wantattack == true && enemy.canattack == true && enemy.body.y <= enemy.target.body.y - 200 && enemy.body.y >= enemy.target.body.y - 100){
+                  enemy.wantattack = false;
+                  enemy.canattack = false;
+                  enemy.setVelocityY((enemy.target.body.y - enemy.body.y)/((enemy.target.body.x - enemy.body.x) / enemy.speed));
+                  enemy.setVelocityX(enemy.speed);
+                  enemy.anims.play('eagledive', true);
+                  this.time.delayedCall(1000,
+                  function (enemy){
+                    enemy.attack = true;
+                    //start attack anim
+                    this.time.delayedCall(300,
+                    function (enemy){
+                      enemy.attack = false;
+                      //start attack anim
+                    }, [enemy], this);
+                    this.time.delayedCall(2000,
+                    function (enemy){
+                      enemy.canattack = true;
+                      //start attack anim
+                    }, [enemy], this);
+                  }, [enemy], this);
+                }
+              }
+              else if(enemy.picking == false){
+                enemy.picking = true;
+                enemy.targets+= 1;
+                this.time.delayedCall(Phaser.Math.Between(2000, 8000),
+                function (enemy){
+                  enemy.picking = false;
+                  let hi = Phaser.Math.Between(0, 4)
+                  if(hi == 0 || enemy.targets > 2){
+                    enemy.wantattack = true;
+                  }
+                  else if(hi == 1 || hi == 2){
+                    enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 400, enemy.target.body.x + 75)
+                    enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 225, enemy.target.body.y - 100)
+                  }
+                  else{
+                    enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 400, enemy.target.body.x - 75)
+                    enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 225, enemy.target.body.y - 100)
+                  }
+                  console.log(enemy.targetpos);
+                }, [enemy], this);
+              }
+            }else if(enemy.attack == false){
+              if (enemy.body.x > enemy.targetposx){
+                enemy.body.setVelocityX(-enemy.speed);
+              }
+              else if (enemy.body.x < enemy.targetposx){
+                enemy.body.setVelocityX(enemy.speed);
+              }
+              if (enemy.body.y > enemy.targetposy){
+                enemy.body.setVelocityY(-enemy.speed);
+              }
+              else if (enemy.body.y < enemy.targetposy){
+                enemy.body.setVelocityY(enemy.speed);
+              }
+            }
+          }else{
+            enemy.target = null;
+          }
+        }
+      }, this)
 
 
 

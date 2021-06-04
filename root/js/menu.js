@@ -8,9 +8,12 @@ class Menu extends Phaser.Scene {
     	//load our images or sounds
     }
     create() {
+      game.scene.start('SceneMain');
+      game.scene.start('Pause');
+      game.scene.start('Gameover');
       gameState3.game = false;
       gameState3.selected = 0;
-      game.scene.Pause('Menu');
+      //game.scene.Pause('Menu');
       this.cursors = this.input.keyboard.createCursorKeys();
       this.keys = this.input.keyboard.addKeys('SPACE, ENTER');
       this.keys.ENTER.on('down', function(){
