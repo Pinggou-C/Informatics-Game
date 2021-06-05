@@ -48,6 +48,6 @@ class Menu extends Phaser.Scene {
     }
 gogogo(){
   this.scene.get('SceneMain').scene.restart();
-  game.scene.Pause('Menu');
+  this.scene.pause('Menu');
 }
 }

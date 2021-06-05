@@ -22,7 +22,7 @@
     gameState.livestock = 10;
     gameState.goalready = true;
     gameState.switchcooldown = false;
-    gameState.spawntime = 3000;
+    gameState.spawntime = 300000;
     gameState.levstrength = 0;
     gameState.jumpwait = 0;
     gameState.jumptimer = false;
@@ -214,7 +214,7 @@ gameState.sheepspeed = 1;
   gameState.sheep.create(0, 50, 'sheep', 0);
   gameState.sheep.create(0, 50, 'sheep', 0);
   gameState.sheep.getChildren().forEach(function (shee){
-    shee.live = 1;
+    shee.live = 1000;
     shee.on('animationcomplete', function (anim, frame) {
       this.emit('animationcomplete_' + anim.key, anim, frame);
     }, shee);
@@ -253,6 +253,7 @@ gameState.sheepspeed = 1;
     enemy.level = 0;
     enemy.targets = 0;
     enemy.canattack = true;
+    enemy.wantattack = true;
     enemy.attack = false;
     enemy.fly = false;
     enemy.stun = false;
@@ -548,7 +549,6 @@ gameState.sheepspeed = 1;
             shee.flipX = false;
           }
           if(shee.body.velocity.x !=0 && shee.iswalk == false){
-            console.log('walk');
             shee.anims.play('sheepwalk', true);
             shee.iswalk = true;
           }
@@ -559,7 +559,6 @@ gameState.sheepspeed = 1;
           }else if(shee.timer == true){
             shee.timer=false;
              shee.tar = Phaser.Math.Between(0, 2);
-             console.log(shee.tar);
               if (shee.tar == 0 || shee.tar == 3){
                 //idle
                 shee.wait = 1;
@@ -627,10 +626,14 @@ gameState.sheepspeed = 1;
           enemy.target = gameState.sheep.getChildren()[Phaser.Math.Between(0, gameState.sheep.getLength() -1)];
           let hi = Phaser.Math.Between(0, 1)
           if(hi == 0){
-            enemy.targetpos = Phaser.Math.Between(enemy.target.body.x + 300, enemy.target.body.x + 70)
+            if(gameState.sheep.contains(enemy.target)){
+              enemy.targetpos = Phaser.Math.Between(enemy.target.body.x + 300, enemy.target.body.x + 70)
+            }
           }
           else{
-            enemy.targetpos = Phaser.Math.Between(enemy.target.body.x - 300, enemy.target.body.x -70)
+            if(gameState.sheep.contains(enemy.target)){
+              enemy.targetpos = Phaser.Math.Between(enemy.target.body.x - 300, enemy.target.body.x -70)
+            }
           }
           console.log(enemy.targetpos);
         }
@@ -729,18 +732,20 @@ gameState.sheepspeed = 1;
 
       //eagle
       gameState.eagle.getChildren().forEach(function (enemy){
-        console.log(enemy.body.x);
-        console.log(enemy.body.y);
         if (enemy.target == null){
           enemy.target = gameState.sheep.getChildren()[Phaser.Math.Between(0, gameState.sheep.getLength() -1)];
           let hi = Phaser.Math.Between(0, 1)
           if(hi == 0){
-            enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 350, enemy.target.body.x + 75)
-            enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 250, enemy.target.body.y - 100)
+            if(gameState.sheep.contains(enemy.target)){
+              enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 350, enemy.target.body.x + 75)
+              enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 250, enemy.target.body.y - 100)
+            }
           }
           else{
-            enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 350, enemy.target.body.x - 75)
-            enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 250, enemy.target.body.y - 100)
+            if(gameState.sheep.contains(enemy.target)){
+              enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 350, enemy.target.body.x - 75)
+              enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 250, enemy.target.body.y - 100)
+            }
           }
         }
         if(enemy.body.velocity.x > 0){
@@ -756,65 +761,175 @@ gameState.sheepspeed = 1;
         if (enemy.stun == false){
           if(gameState.sheep.contains(enemy.target)){
             if((enemy.body.x <= enemy.targetposx + 10 && enemy.body.x >= enemy.targetposx - 10)&&(enemy.body.y <= enemy.targetposy + 10 && enemy.body.y >= enemy.targetposy - 10)){
-              enemy.body.setVelocityY(0);
-              enemy.body.setVelocityX(0);
-              enemy.fly = false;
+              if(enemy.canattack == true){
+                enemy.body.setVelocityY(0);
+                enemy.body.setVelocityX(0);
+                enemy.fly = false;
+              }
               if(enemy.canattack == true){
 
-              }
-              if(enemy.body.x <= enemy.target.body.x + 60 && enemy.body.x >= enemy.target.body.x - 60){
 
-                if(enemy.body.x <= enemy.target.body.x + 175 && enemy.body.x >= enemy.target.body.x + 125 && enemy.wantattack == true && enemy.canattack == true && enemy.body.y <= enemy.target.body.y - 200 && enemy.body.y >= enemy.target.body.y - 100){
-                  enemy.wantattack = false;
-                  enemy.canattack = false;
-                  enemy.setVelocityY((enemy.target.body.y - enemy.body.y)/((enemy.target.body.x - enemy.body.x) / enemy.speed));
-                  enemy.setVelocityX(-enemy.speed);
-                  enemy.anims.play('eagledive', true);
-                  this.time.delayedCall(1000,
+              }if(enemy.wantattack == true){
+                if(enemy.body.x <= enemy.target.body.x + 200 && enemy.body.x >= enemy.target.body.x + 125 && enemy.body.y >= enemy.target.body.y - 200 && enemy.body.y <= enemy.target.body.y - 100){
+                  if(enemy.canattack == true){
+
+                    console.log('yi2');
+                    enemy.wantattack = false;
+                    enemy.canattack = false;
+                    enemy.setVelocityX(-enemy.speed*1.5);
+                    enemy.anims.play('eagledive', true);
+                    this.tweens.addCounter({
+                      from: (enemy.target.body.y - enemy.body.y) * 1.35,
+                      to: 0,
+                      duration: 1500,
+                      repeat: 0,
+                      onUpdate: function (tween){
+                        const value = Math.floor(tween.getValue());
+                        enemy.setVelocityY(value);
+                      },
+                      onCompleteScope: this,
+                      onComplete: function () {
+                        this.tweens.addCounter({
+                          from: 0,
+                          to: -200,
+                          duration: 1000,
+                          repeat: 0,
+                          onUpdate: function (tween){
+                            const value = Math.floor(tween.getValue());
+                            enemy.setVelocityY(value);
+                          },
+                          onCompleteScope: this,
+                          onComplete: function () {
+                            this.tweens.addCounter({
+                              from: -200,
+                              to: 0,
+                              duration: 250,
+                              repeat: 0,
+                              onUpdate: function (tween){
+                                const value = Math.floor(tween.getValue());
+                                enemy.setVelocityY(value);
+                              },
+                              onCompleteScope: this,
+                              onComplete: function () {
+                                //enemy.setVelocityX(0);
+                              }
+                            }, this);
+                          }
+                        });
+                      }
+                    }, this);
+                    this.time.delayedCall(500,
+                    function (enemy){
+                      enemy.attack = true;
+                      //start attack anim
+                      this.time.delayedCall(1250,
+                      function (enemy){
+                        enemy.attack = false;
+                        this.time.delayedCall(1300,
+                        function (enemy){
+                          enemy.canattack = true;
+                          //start attack anim
+                        }, [enemy], this);
+                      }, [enemy], this);
+                    }, [enemy], this);
+                  }
+                }else if(enemy.body.x <= enemy.target.body.x - 125 && enemy.body.x >= enemy.target.body.x - 200 && enemy.body.y >= enemy.target.body.y - 200 && enemy.body.y <= enemy.target.body.y - 100){
+                  if(enemy.canattack == true){
+
+                    console.log('yi2');
+                    enemy.wantattack = false;
+                    enemy.canattack = false;
+                    //enemy.setVelocityY((enemy.target.body.y - enemy.body.y)/((enemy.target.body.x - enemy.body.x) / enemy.speed));
+                    enemy.setVelocityX(enemy.speed * 1.5);
+                    enemy.anims.play('eagledive', true);
+                    this.tweens.addCounter({
+                      from: (enemy.target.body.y - enemy.body.y) * 1.35,
+                      to: 0,
+                      duration: 1500,
+                      repeat: 0,
+                      onUpdate: function (tween){
+                        const value = Math.floor(tween.getValue());
+                        enemy.setVelocityY(value);
+                      },
+                      onCompleteScope: this,
+                      onComplete: function () {
+                        this.tweens.addCounter({
+                          from: 0,
+                          to: -200,
+                          duration: 750,
+                          repeat: 0,
+                          onUpdate: function (tween){
+                            const value = Math.floor(tween.getValue());
+                            enemy.body.setVelocityY(value);
+                          },
+                          onCompleteScope: this,
+                          onComplete: function () {
+                            this.tweens.addCounter({
+                              from: -200,
+                              to: 0,
+                              duration: 250,
+                              repeat: 0,
+                              onUpdate: function (tween){
+                                const value = Math.floor(tween.getValue());
+                                enemy.setVelocityY(value);
+                              },
+                              onCompleteScope: this,
+                              onComplete: function () {
+                                //enemy.body.setVelocityX(0);
+                              }
+                            }, this);
+                          }
+                        }, this);
+                      }
+                    }, this);
+                    this.time.delayedCall(500,
+                    function (enemy){
+                      enemy.attack = true;
+                      //start attack anim
+                      this.time.delayedCall(1250,
+                      function (enemy){
+                        enemy.attack = false;
+                        this.time.delayedCall(1300,
+                        function (enemy){
+                          enemy.canattack = true;
+                          //start attack anim
+                        }, [enemy], this);
+                      }, [enemy], this);
+                    }, [enemy], this);
+                  }
+                }else if(enemy.picking == false){
+                  enemy.picking = true;
+                  console.log('yi3');
+                  enemy.targets+= 1;
+                  this.time.delayedCall(Phaser.Math.Between(2000, 8000),
                   function (enemy){
-                    enemy.attack = true;
-                    //start attack anim
-                    this.time.delayedCall(300,
-                    function (enemy){
-                      enemy.attack = false;
-                      //start attack anim
-                    }, [enemy], this);
-                    this.time.delayedCall(2000,
-                    function (enemy){
-                      enemy.canattack = true;
-                      //start attack anim
-                    }, [enemy], this);
-                  }, [enemy], this);
-                }else if(enemy.body.x <= enemy.target.body.x - 125 && enemy.body.x >= enemy.target.body.x - 175 && enemy.wantattack == true && enemy.canattack == true && enemy.body.y <= enemy.target.body.y - 200 && enemy.body.y >= enemy.target.body.y - 100){
-                  enemy.wantattack = false;
-                  enemy.canattack = false;
-                  enemy.setVelocityY((enemy.target.body.y - enemy.body.y)/((enemy.target.body.x - enemy.body.x) / enemy.speed));
-                  enemy.setVelocityX(enemy.speed);
-                  enemy.anims.play('eagledive', true);
-                  this.time.delayedCall(1000,
-                  function (enemy){
-                    enemy.attack = true;
-                    //start attack anim
-                    this.time.delayedCall(300,
-                    function (enemy){
-                      enemy.attack = false;
-                      //start attack anim
-                    }, [enemy], this);
-                    this.time.delayedCall(2000,
-                    function (enemy){
-                      enemy.canattack = true;
-                      //start attack anim
-                    }, [enemy], this);
+                    console.log('HELLO');
+                    enemy.picking = false;
+                    let hi = Phaser.Math.Between(0, 1);
+                    console.log(hi + 'hiii' + enemy.targets);
+                    if(hi == 1){
+                      enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 200, enemy.target.body.x + 125)
+                      enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 200, enemy.target.body.y - 100)
+                    }
+                    else{
+                      enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 200, enemy.target.body.x - 125)
+                      enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 200, enemy.target.body.y - 100)
+                    }
+                    console.log(enemy.targetposx);
+                    console.log(enemy.targetposy);
                   }, [enemy], this);
                 }
               }
               else if(enemy.picking == false){
                 enemy.picking = true;
+                console.log('yi3');
                 enemy.targets+= 1;
                 this.time.delayedCall(Phaser.Math.Between(2000, 8000),
                 function (enemy){
+                  console.log('HELLO');
                   enemy.picking = false;
-                  let hi = Phaser.Math.Between(0, 4)
+                  let hi = Phaser.Math.Between(0, 4);
+                  console.log(hi + 'hiii' + enemy.targets);
                   if(hi == 0 || enemy.targets > 2){
                     enemy.wantattack = true;
                   }
@@ -826,21 +941,26 @@ gameState.sheepspeed = 1;
                     enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 400, enemy.target.body.x - 75)
                     enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 225, enemy.target.body.y - 100)
                   }
-                  console.log(enemy.targetpos);
+                  console.log(enemy.targetposx);
+                  console.log(enemy.targetposy);
                 }, [enemy], this);
               }
-            }else if(enemy.attack == false){
-              if (enemy.body.x > enemy.targetposx){
+            }else if(enemy.canattack == true){
+              if (enemy.body.x > enemy.targetposx + 5){
                 enemy.body.setVelocityX(-enemy.speed);
               }
-              else if (enemy.body.x < enemy.targetposx){
+              else if (enemy.body.x < enemy.targetposx - 5){
                 enemy.body.setVelocityX(enemy.speed);
+              }else{
+                enemy.body.setVelocityX(0);
               }
-              if (enemy.body.y > enemy.targetposy){
+              if (enemy.body.y > enemy.targetposy + 5){
                 enemy.body.setVelocityY(-enemy.speed);
               }
-              else if (enemy.body.y < enemy.targetposy){
+              else if (enemy.body.y < enemy.targetposy - 5){
                 enemy.body.setVelocityY(enemy.speed);
+              }else{
+                enemy.body.setVelocityY(0);
               }
             }
           }else{
