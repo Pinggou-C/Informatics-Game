@@ -20,9 +20,10 @@
     game.scale.resize(640, 360);
     gameState.sceneGameover = this.scene.get('Gameover');
     gameState.livestock = 10;
+    gameState.enemies = 2;
     gameState.goalready = true;
     gameState.switchcooldown = false;
-    gameState.spawntime = 300000;
+    gameState.spawntime = 30000;
     gameState.levstrength = 0;
     gameState.jumpwait = 0;
     gameState.jumptimer = false;
@@ -123,7 +124,7 @@
     this.anims.create({
       key: 'wolfwalk',
       frames: this.anims.generateFrameNumbers('wolf', { start: 0, end: 4 }),
-      frameRate: 4,
+      frameRate: 8,
       repeat: -1
     });
     this.anims.create({
@@ -214,7 +215,7 @@ gameState.sheepspeed = 1;
   gameState.sheep.create(0, 50, 'sheep', 0);
   gameState.sheep.create(0, 50, 'sheep', 0);
   gameState.sheep.getChildren().forEach(function (shee){
-    shee.live = 1000;
+    shee.live = 3;
     shee.on('animationcomplete', function (anim, frame) {
       this.emit('animationcomplete_' + anim.key, anim, frame);
     }, shee);
@@ -241,7 +242,7 @@ gameState.sheepspeed = 1;
     enemy.picking = false;
     enemy.wait = false;
     enemy.target = null;
-
+    enemy.targetposx;
   });
   gameState.wolf.setOrigin(0.5, 0.5);
   gameState.eagle = this.physics.add.group({allowGravity: false});
@@ -261,6 +262,7 @@ gameState.sheepspeed = 1;
     enemy.wait = false;
     enemy.target = null;
     enemy.body.setGravity(0);
+    enemy.targetposx;
   });
   gameState.eagle.setOrigin(0.5, 0.5);
   gameState.Lion = this.physics.add.group();
@@ -337,6 +339,8 @@ gameState.sheepspeed = 1;
           //this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, [hitstrength, knockback, stun], this);
             this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, null, this);
             this.physics.add.overlap(gameState.wolf, gameState.stick, this.enimHit, null, this);
+            this.physics.add.overlap(gameState.eagle, gameState.projectile, this.enimHit, null, this);
+            this.physics.add.overlap(gameState.eagle, gameState.stick, this.enimHit, null, this);
 
 
 // DEBUG:
@@ -352,36 +356,71 @@ gameState.sheepspeed = 1;
       delay: gameState.spawntime,                // ms
       callback: function (){
         if(gameState.spawntime > 7500){
-          gameState.spawntime = -100
+          gameState.spawntime = -100;
         }
+        console.log(gameState.spawntime);
         gameState.levstrength += 1;
-        console.log(Math.round(0.5 * (3 * gameState.levstrength - 2 * Math.sqrt(2 * gameState.levstrength) - Math.sqrt(0.25 * gameState.levstrength) * 2))+ 2 + 'ii')
-        for(let i = Math.round(0.5 * (3 * gameState.levstrength - 2 * Math.sqrt(2 * gameState.levstrength) - Math.sqrt(0.25 * gameState.levstrength) * 2))+ 2 ; i > 0; i-- ){
-          let xx = Phaser.Math.Between(0, 1);
-          let yy = Phaser.Math.Between(0, 1);
-          this.limx1 = gameState.player.body.x + 370;
-          this.limy1 = gameState.player.body.y + 230;
-          this.limx0 = gameState.player.body.x - 370;
-          this.limy0 = gameState.player.body.y - 230;
-          let posx = Phaser.Math.Between(this['limx' + xx.toString()], this['limx' + xx.toString()] + (xx * 2 -1) * 100);
-          let posy = Phaser.Math.Between(this['limy' + yy.toString()], this['limy' + yy.toString()] + (yy * 2 -1) * 100);
-          console.log(posx)
-          gameState.wolf.create(posx, 100, 'wolf', 8);
+        console.log(Math.round(0.5 * (3 * gameState.levstrength - 2 * Math.sqrt(2 * gameState.levstrength) - Math.sqrt(0.25 * gameState.levstrength) * 2))+ 3 + 'ii');
+        for(let i = Math.round(0.5 * (3 * gameState.levstrength - 2 * Math.sqrt(2 * gameState.levstrength) - Math.sqrt(0.25 * gameState.levstrength) * 2))+ 3 ; i > 0; i-- ){
+
+          let ii = Phaser.Math.Between(0, 1);
+          if(ii == 0){
+            let xx = Phaser.Math.Between(0, 1);
+            let yy = Phaser.Math.Between(0, 1);
+            gameState.enemies += 1;
+            this.limx1 = gameState.player.body.x + 370;
+            this.limy1 = gameState.player.body.y + 230;
+            this.limx0 = gameState.player.body.x - 370;
+            this.limy0 = gameState.player.body.y - 230;
+            let posx = Phaser.Math.Between(this['limx' + xx.toString()], this['limx' + xx.toString()] + (xx * 2 -1) * 100);
+            let posy = Phaser.Math.Between(this['limy' + yy.toString()], this['limy' + yy.toString()] + (yy * 2 -1) * 100);
+            gameState.wolf.create(posx, 100, 'wolf', 8);
+          }else if(ii == 1){
+            let xx = Phaser.Math.Between(0, 1);
+            let yy = Phaser.Math.Between(0, 1);
+            gameState.enemies += 1;
+            this.limx1 = gameState.player.body.x + 370;
+            this.limy1 = gameState.player.body.y + 230;
+            this.limx0 = gameState.player.body.x - 370;
+            this.limy0 = gameState.player.body.y - 230;
+            let posx = Phaser.Math.Between(this['limx' + xx.toString()], this['limx' + xx.toString()] + (xx * 2 -1) * 100);
+            let posy = Phaser.Math.Between(this['limy' + yy.toString()], this['limy' + yy.toString()] + (yy * 2 -1) * 100);
+            gameState.eagle.create(posx, posy, 'eagle', 0);
+          }
         }
         gameState.wolf.getChildren().forEach(function (enemy){
           if (enemy.level === undefined){
             enemy.health = 4;
             enemy.speed = 75;
             enemy.level = gameState.levstrength;
-            enemy.wait = false;
-            enemy.body.setVelocityX(enemy.speed);
             enemy.targets = 0;
             enemy.canattack = true;
             enemy.attack = false;
             enemy.walk = false;
             enemy.stun = false;
             enemy.picking = false;
+            enemy.wait = false;
             enemy.target = null;
+            enemy.targetposx;
+          }
+
+        });
+        gameState.eagle.getChildren().forEach(function (enemy){
+          if (enemy.level === undefined){
+            enemy.health = 2;
+            enemy.speed = 75;
+            enemy.level = gameState.levstrength;
+            enemy.targets = 0;
+            enemy.canattack = true;
+            enemy.wantattack = true;
+            enemy.attack = false;
+            enemy.fly = false;
+            enemy.stun = false;
+            enemy.picking = false;
+            enemy.wait = false;
+            enemy.target = null;
+            enemy.body.setGravity(0);
+            enemy.targetposx;
           }
 
         });
@@ -627,15 +666,14 @@ gameState.sheepspeed = 1;
           let hi = Phaser.Math.Between(0, 1)
           if(hi == 0){
             if(gameState.sheep.contains(enemy.target)){
-              enemy.targetpos = Phaser.Math.Between(enemy.target.body.x + 300, enemy.target.body.x + 70)
+              enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 300, enemy.target.body.x + 70)
             }
           }
           else{
             if(gameState.sheep.contains(enemy.target)){
-              enemy.targetpos = Phaser.Math.Between(enemy.target.body.x - 300, enemy.target.body.x -70)
+              enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 300, enemy.target.body.x -70)
             }
           }
-          console.log(enemy.targetpos);
         }
         if(enemy.body.velocity.x > 0){
           enemy.flipX = true;
@@ -649,14 +687,14 @@ gameState.sheepspeed = 1;
         }
         if (enemy.stun == false){
           if(gameState.sheep.contains(enemy.target)){
-            if(enemy.body.x <= enemy.targetpos + 10 && enemy.body.x >= enemy.targetpos - 10){
+            if(enemy.body.x <= enemy.targetposx + 10 && enemy.body.x >= enemy.targetposx - 10){
               enemy.body.setVelocityX(0);
               enemy.walk = false;
               if(enemy.canattack == true){
                 enemy.anims.play('wolfstand', true);
               }
               if(enemy.body.x <= enemy.target.body.x + 60 && enemy.body.x >= enemy.target.body.x - 60){
-                enemy.targetpos = enemy.target.body.x;
+                enemy.targetposx = enemy.target.body.x;
                 if(enemy.body.x <= enemy.target.body.x + 20 && enemy.body.x >= enemy.target.body.x - 20){
                   if(enemy.canattack == true){
                   //start attack anim
@@ -688,27 +726,26 @@ gameState.sheepspeed = 1;
                   enemy.picking = false;
                   let hi = Phaser.Math.Between(0, 2)
                   if(hi == 0 || enemy.targets > 2){
-                    enemy.targetpos = Phaser.Math.Between(enemy.target.body.x -50, enemy.target.body.x + 50)
+                    enemy.targetposx = Phaser.Math.Between(enemy.target.body.x -50, enemy.target.body.x + 50)
                   }
                   else if(hi == 1){
-                    enemy.targetpos = Phaser.Math.Between(enemy.target.body.x + 200, enemy.target.body.x + 60)
+                    enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 200, enemy.target.body.x + 60)
                   }
                   else{
                     enemy.targetpos = Phaser.Math.Between(enemy.target.body.x - 200, enemy.target.body.x -60)
                   }
-                  console.log(enemy.targetpos);
                 }, [enemy], this);
               }
             }else if(enemy.attack == false){
-              if (enemy.body.x > enemy.targetpos){
-                if((enemy.body.x >= enemy.target.body.x - 40 && enemy.body.x <= enemy.target.body.x + 40)&&(enemy.body.x >= enemy.targetpos - 40 && enemy.body.x <= enemy.targetpos + 40)){
+              if (enemy.body.x > enemy.targetposx){
+                if((enemy.body.x >= enemy.target.body.x - 40 && enemy.body.x <= enemy.target.body.x + 40)&&(enemy.body.x >= enemy.targetposx - 40 && enemy.body.x <= enemy.targetposx + 40)){
                   enemy.body.setVelocityX(-enemy.speed / 2);
                 }else{
                   enemy.body.setVelocityX(-enemy.speed);
                 }
               }
-              else if (enemy.body.x < enemy.targetpos){
-                if((enemy.body.x >= enemy.target.body.x - 40 && enemy.body.x <= enemy.target.body.x + 40)&&(enemy.body.x >= enemy.targetpos - 40 && enemy.body.x <= enemy.targetpos + 40)){
+              else if (enemy.body.x < enemy.targetposx){
+                if((enemy.body.x >= enemy.target.body.x - 40 && enemy.body.x <= enemy.target.body.x + 40)&&(enemy.body.x >= enemy.targetposx - 40 && enemy.body.x <= enemy.targetposx + 40)){
                   enemy.body.setVelocityX(enemy.speed / 2);
                 }else{
                   enemy.body.setVelocityX(enemy.speed);
@@ -779,7 +816,7 @@ gameState.sheepspeed = 1;
                     enemy.setVelocityX(-enemy.speed*1.5);
                     enemy.anims.play('eagledive', true);
                     this.tweens.addCounter({
-                      from: (enemy.target.body.y - enemy.body.y) * 1.35,
+                      from: (enemy.target.body.y - enemy.body.y) * 1.3,
                       to: 0,
                       duration: 1500,
                       repeat: 0,
@@ -836,14 +873,13 @@ gameState.sheepspeed = 1;
                 }else if(enemy.body.x <= enemy.target.body.x - 125 && enemy.body.x >= enemy.target.body.x - 200 && enemy.body.y >= enemy.target.body.y - 200 && enemy.body.y <= enemy.target.body.y - 100){
                   if(enemy.canattack == true){
 
-                    console.log('yi2');
                     enemy.wantattack = false;
                     enemy.canattack = false;
                     //enemy.setVelocityY((enemy.target.body.y - enemy.body.y)/((enemy.target.body.x - enemy.body.x) / enemy.speed));
                     enemy.setVelocityX(enemy.speed * 1.5);
                     enemy.anims.play('eagledive', true);
                     this.tweens.addCounter({
-                      from: (enemy.target.body.y - enemy.body.y) * 1.35,
+                      from: (enemy.target.body.y - enemy.body.y) * 1.3,
                       to: 0,
                       duration: 1500,
                       repeat: 0,
@@ -899,14 +935,11 @@ gameState.sheepspeed = 1;
                   }
                 }else if(enemy.picking == false){
                   enemy.picking = true;
-                  console.log('yi3');
                   enemy.targets+= 1;
                   this.time.delayedCall(Phaser.Math.Between(2000, 8000),
                   function (enemy){
-                    console.log('HELLO');
                     enemy.picking = false;
                     let hi = Phaser.Math.Between(0, 1);
-                    console.log(hi + 'hiii' + enemy.targets);
                     if(hi == 1){
                       enemy.targetposx = Phaser.Math.Between(enemy.target.body.x + 200, enemy.target.body.x + 125)
                       enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 200, enemy.target.body.y - 100)
@@ -915,22 +948,17 @@ gameState.sheepspeed = 1;
                       enemy.targetposx = Phaser.Math.Between(enemy.target.body.x - 200, enemy.target.body.x - 125)
                       enemy.targetposy = Phaser.Math.Between(enemy.target.body.y - 200, enemy.target.body.y - 100)
                     }
-                    console.log(enemy.targetposx);
-                    console.log(enemy.targetposy);
                   }, [enemy], this);
                 }
               }
               else if(enemy.picking == false){
                 enemy.picking = true;
-                console.log('yi3');
                 enemy.targets+= 1;
                 this.time.delayedCall(Phaser.Math.Between(2000, 8000),
                 function (enemy){
-                  console.log('HELLO');
                   enemy.picking = false;
                   let hi = Phaser.Math.Between(0, 4);
-                  console.log(hi + 'hiii' + enemy.targets);
-                  if(hi == 0 || enemy.targets > 2){
+                  if(hi == 0 || enemy.targets > 3){
                     enemy.wantattack = true;
                   }
                   else if(hi == 1 || hi == 2){
@@ -983,10 +1011,14 @@ gameState.sheepspeed = 1;
   }
   batHit (shee, enemie){
     if(shee.hitready == true && enemie.attack == true){
+      let dam = 1;
+      if(gameState.eagle.contains(enemie)){
+        dam = 2;
+      }
       if(enemie.target == shee){
       shee.tint = 0xff0000;;
       shee.hitready = false;
-      shee.live = shee.live - 1;
+      shee.live = shee.live - dam;
       if(shee.live > 0){
         this.time.delayedCall(200, this.hitflash(shee), null, this);
         this.time.delayedCall(2000,
@@ -999,8 +1031,6 @@ gameState.sheepspeed = 1;
         shee.anims.play('sheepdie', true);
       }
       }
-
-    //gameState.camera.shake(200, 0.005);
   }
   }
   hitflash (shee){
@@ -1034,9 +1064,14 @@ gameState.sheepspeed = 1;
         }, [enim, this]);
     enim.health = enim.health - obj.strength;
     if (enim.health == 0){
-
-      gameState.wolf.killAndHide(enim);
-      gameState.wolf.remove(enim, true, true);
+      if(gameState.wolf.contains(enim)){
+        gameState.wolf.killAndHide(enim);
+        gameState.wolf.remove(enim, true, true);
+      }else if(gameState.eagle.contains(enim)){
+        gameState.eagle.killAndHide(enim);
+        gameState.eagle.remove(enim, true, true);
+      }
+      gameState.enemies -= 1;
     }else{
       var dir;
       if(enim.body.x > obj.body.x){
@@ -1044,30 +1079,36 @@ gameState.sheepspeed = 1;
       }else{
         dir = -1;
       }
-      enim.body.setVelocityX(75 * obj.knockback * dir);
-      enim.body.setVelocityY(-75);
-      this.tweens.addCounter({
-        from: enim.body.velocity.x,
-        to: 0,
-        duration: 400,
-        repeat: 0,
-        onUpdate: function (tween){
-          const value = Math.floor(tween.getValue());
-          enim.body.setVelocityX(value);
-        },
-        onCompleteScope: this,
-        onComplete: function (){
-          this.time.delayedCall(obj.stun,
-            function (enim){
-              if(gameState.sheep.contains(enim.target)){
-                enim.targetpos = Phaser.Math.Between(enim.target.body.x + 250 * dir, enim.target.body.x + 50 * dir);
-              }else{
-                enim.target = null;
-              }
-              enim.stun = false;
-            }, [enim], this);
-        }
-      }, this);
+        enim.body.setVelocityX(75 * obj.knockback * dir);
+        enim.body.setVelocityY(-50);
+        this.tweens.addCounter({
+          from: enim.body.velocity.x,
+          to: 0,
+          duration: 400,
+          repeat: 0,
+          onUpdate: function (tween){
+            const value = Math.floor(tween.getValue());
+            enim.body.setVelocityX(value);
+          },
+          onCompleteScope: this,
+          onComplete: function (){
+            this.time.delayedCall(obj.stun,
+              function (enim){
+                if(gameState.sheep.contains(enim.target)){
+                  if(gameState.wolf.contains(enim)){
+                    enim.targetposx = Phaser.Math.Between(enim.target.body.x + 250 * dir, enim.target.body.x + 50 * dir);
+                    gameState.wolf.remove(enim, true, true);
+                  }else if(gameState.eagle.contains(enim)){
+                    enim.targetposx = Phaser.Math.Between(enim.target.body.x + 400 * dir, enim.target.body.x + 75 * dir);
+                    enim.targetposy = Phaser.Math.Between(enim.target.body.y - 200, enim.target.body.y - 100);
+                  }
+                }else{
+                  enim.target = null;
+                }
+                enim.stun = false;
+              }, [enim], this);
+          }
+        }, this);
     }
 
   }
