@@ -20,6 +20,11 @@
     game.scale.resize(640, 360);
     gameState.sceneGameover = this.scene.get('Gameover');
     gameState.livestock = 10;
+    gameState.charged = false;
+    gameState.playerattack = false;
+    gameState.playermax =100;
+    gameState.attackready = true;
+    gameState.currentweapon = 0;
     gameState.enemies = 2;
     gameState.goalready = true;
     gameState.switchcooldown = false;
@@ -291,7 +296,7 @@ gameState.sheepspeed = 1;
       gameState.player.setOrigin(0.5, 0.5);
       gameState.player.body.setCollideWorldBounds(true);
       gameState.player.body.onWorldBounds = true;
-      gameState.player.currentweapon = 0;
+
       //weapons
         gameState.projectile = this.physics.add.group({allowGravity: false});
         gameState.projectile.getChildren().forEach(function (pro){
@@ -338,9 +343,9 @@ gameState.sheepspeed = 1;
         //Objects
           //this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, [hitstrength, knockback, stun], this);
             this.physics.add.overlap(gameState.wolf, gameState.projectile, this.enimHit, null, this);
-            this.physics.add.overlap(gameState.wolf, gameState.stick, this.enimHit, null, this);
+            this.physics.add.overlap(gameState.wolf, gameState.player, this.enimHit, null, this);
             this.physics.add.overlap(gameState.eagle, gameState.projectile, this.enimHit, null, this);
-            this.physics.add.overlap(gameState.eagle, gameState.stick, this.enimHit, null, this);
+            this.physics.add.overlap(gameState.eagle, gameState.player, this.enimHit, null, this);
 
 
 // DEBUG:
@@ -352,8 +357,44 @@ gameState.sheepspeed = 1;
     gameState.cursors = this.input.keyboard.createCursorKeys();
     gameState.keys = this.input.keyboard.addKeys('Z,X,C,V,SPACE');
     gameState.uikeys = this.input.keyboard.addKeys('ENTER,SPACE, CTRL,P,TAB,ALT,BACKSPACE,SHIFT');
+    gameState.keys.X.on('up', function(event) {
+      console.log('ci');
+      if(gameState.charged == true){
+        console.log('ci');
+          gameState.charged = false;
+          let iiii = 0;
+          let yiyi = 0;
+          let zz = 1;
+          let lyyy = gameState.projectile.create(gameState.player.body.x + 8, gameState.player.body.y + 12, 'dude', 0);
+          if(gameState.cursors.right.isDown){
+            iiii = 1;
+          }else if(gameState.cursors.left.isDown){
+            iiii = -1;
+          }else{
+            zz = 0;
+          }
+
+          if(gameState.cursors.up.isDown){
+            yiyi = -1;
+          }else if(gameState.cursors.down.isDown){
+            yiyi = 1;
+          }else if(zz == 0){
+            iiii = 1;
+          }
+          lyyy.body.setVelocityX(iiii * 350);
+          lyyy.body.setVelocityY(yiyi * 350);
+          lyyy.strength = 3;
+          lyyy.knockback = 1;
+          lyyy.stun = 2000;
+          this.time.delayedCall(1000,
+          function (){
+            gameState.attackready = true;
+          }, null, this);
+        }
+    }, this);
+
     var spawntimer = this.time.addEvent({
-      delay: gameState.spawntime,                // ms
+      delay: gameState.spawntime,
       callback: function (){
         if(gameState.spawntime > 7500){
           gameState.spawntime = -100;
@@ -435,7 +476,7 @@ gameState.sheepspeed = 1;
 
 
   update(delta) {
-
+    console.log(gameState.currentweapon);
     if (this.game.paused) {
       return;
     }else{
@@ -471,15 +512,15 @@ gameState.sheepspeed = 1;
 
       });
       if(gameState.keys.C.isDown && gameState.switchcooldown == false){
-        gameState.player.currentweapon += 1;
+        gameState.currentweapon += 1;
         gameState.switchcooldown = true;
         this.time.delayedCall(250,
         function (){
           gameState.switchcooldown = false;
         }, null, this);
-        if (gameState.player.currentweapon>3){
-          gameState.player.currentweapon = 0;
-        }this.switchweapon(gameState.player.currentweapon);
+        if (gameState.currentweapon>2){
+          gameState.currentweapon = 0;
+        }
       }
       if(gameState.keys.Z.isDown){
         if(gameState.goalready == true){
@@ -492,6 +533,33 @@ gameState.sheepspeed = 1;
           }, null, this);
         }else{
           //display error
+        }
+      }
+      if(gameState.keys.X.isDown){
+        if(gameState.currentweapon == 0){
+          if(gameState.attackready == true){
+            console.log('wi1.2');
+            gameState.attackready = false;
+            this.time.delayedCall(200,
+            function (){
+              gameState.playerattack = true;
+              this.time.delayedCall(200,
+              function (){
+                gameState.playerattack = true;
+              }, null, this);
+            }, null, this);
+            this.time.delayedCall(750,
+            function (){
+              gameState.attackready = true;
+            }, null, this);
+          }
+        }else if(gameState.currentweapon == 1){
+          if(gameState.charged == false && gameState.attackready == true){
+            console.log('wi3');
+            gameState.charged = true;
+            gameState.attackready = false;
+
+          }
         }
       }
       //jump
@@ -525,7 +593,7 @@ gameState.sheepspeed = 1;
       }
       //left right
       if (gameState.cursors.left.isDown){
-        if(gameState.player.body.velocity.x > -100){
+        if(gameState.player.body.velocity.x > -gameState.playermax){
           if(gameState.velxtween == true){
             gameState.tweenx.stop();
           }
@@ -541,7 +609,7 @@ gameState.sheepspeed = 1;
           }
         }
       }else if (gameState.cursors.right.isDown){
-        if(gameState.player.body.velocity.x < 100){
+        if(gameState.player.body.velocity.x < gameState.playermax){
           if(gameState.velxtween == true){
             gameState.tweenx.stop();
           }
@@ -568,7 +636,15 @@ gameState.sheepspeed = 1;
             gameState.velxtween = false;
           }
         });
-      }if (gameState.jumptimer == true && gameState.wasonfloor == true){
+      }if(gameState.charged == true){
+        gameState.playermax =20;
+      }else{
+        gameState.playermax =100;
+      }
+      if(gameState.player.body.velocity.x < -gameState.playermax || gameState.player.body.velocity.x > gameState.playermax){
+        gameState.player.body.setVelocityX(gameState.player.body.velocity.x / (1+3*((delta-gameState.delta)/1000)));
+      }
+      if (gameState.jumptimer == true && gameState.wasonfloor == true){
         gameState.player.setVelocityY(-301);
         gameState.wasonfloor = false;
         gameState.jumptimer = false;
@@ -1055,6 +1131,8 @@ gameState.sheepspeed = 1;
   }
   enimHit(enim, obj){
     if(enim.wait == false){
+      if((obj == gameState.player && gameState.playerattack == true )||(gameState.projectile.contains(obj))){
+        console.log('ei');
       enim.stun = true;
       enim.wait = true;
       enim.targets = 0;
@@ -1063,7 +1141,9 @@ gameState.sheepspeed = 1;
           enim.wait = false;
         }, [enim, this]);
     enim.health = enim.health - obj.strength;
-    if (enim.health == 0){
+    console.log(enim.health);
+    if (enim.health <= 0){
+      console.log('ei3');
       if(gameState.wolf.contains(enim)){
         gameState.wolf.killAndHide(enim);
         gameState.wolf.remove(enim, true, true);
@@ -1097,7 +1177,6 @@ gameState.sheepspeed = 1;
                 if(gameState.sheep.contains(enim.target)){
                   if(gameState.wolf.contains(enim)){
                     enim.targetposx = Phaser.Math.Between(enim.target.body.x + 250 * dir, enim.target.body.x + 50 * dir);
-                    gameState.wolf.remove(enim, true, true);
                   }else if(gameState.eagle.contains(enim)){
                     enim.targetposx = Phaser.Math.Between(enim.target.body.x + 400 * dir, enim.target.body.x + 75 * dir);
                     enim.targetposy = Phaser.Math.Between(enim.target.body.y - 200, enim.target.body.y - 100);
@@ -1109,8 +1188,12 @@ gameState.sheepspeed = 1;
               }, [enim], this);
           }
         }, this);
+      }
+      if(gameState.projectile.contains(obj)){
+        gameState.projectile.killAndHide(obj);
+        gameState.projectile.remove(obj, true, true);
+      }
     }
-
   }
 }
   //ADD Enemies & Bossen
