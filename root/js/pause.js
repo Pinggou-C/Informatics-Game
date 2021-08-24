@@ -85,8 +85,6 @@ class Pause extends Phaser.Scene {
             });
             game.scene.pause('SceneMain');
           }
-
-
       }, this);
 
     }
